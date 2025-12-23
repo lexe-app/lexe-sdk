@@ -1,0 +1,16 @@
+[package]
+name = "rust-example"
+version = "0.0.0"
+edition = "2021"
+
+# Empty workspace table ensures this is a standalone crate, not part of any
+# parent monorepo workspace.
+[workspace]
+
+[dependencies]
+
+# `sdk-rust` is the name of the Rust SDK crate within Lexe's monorepo.
+lexe-sdk = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-public" }
+
+dotenvy = "0.15"
+tokio = { version = "1", features = ["rt", "macros"] }
