@@ -1,7 +1,5 @@
 # Lexe Rust SDK
 
-## Overview
-
 The Lexe Rust SDK provides a native Rust interface for developers to control their
 self-custodial, always-online [Lexe](https://lexe.app) Lightning node.
 
