@@ -14,3 +14,4 @@ lexe-sdk = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-publi
 
 dotenvy = "0.15"
 tokio = { version = "1", features = ["rt", "macros"] }
+tracing = "0.1"

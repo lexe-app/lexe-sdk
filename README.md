@@ -84,7 +84,7 @@ use lexe_sdk::{
 
 // Initialize wallet
 let mut rng = SysRng::new();
-let env_config = WalletEnvConfig::prod();
+let env_config = WalletEnvConfig::mainnet();
 let wallet = LexeWallet::load_or_fresh(
     &mut rng,
     env_config,

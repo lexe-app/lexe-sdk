@@ -37,10 +37,8 @@ mod test {
         )]
 
         // --- Config types ---
-        let _env_config: WalletEnvConfig = WalletEnvConfig::prod();
-        let _env_config: WalletEnvConfig = WalletEnvConfig::staging();
-        let _env_config: WalletEnvConfig =
-            WalletEnvConfig::dev(false, None::<&str>);
+        let _env_config: WalletEnvConfig = WalletEnvConfig::mainnet();
+        let _env_config: WalletEnvConfig = WalletEnvConfig::testnet3();
 
         // --- Credential types ---
         let rng: &mut SysRng = todo!();
