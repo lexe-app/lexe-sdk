@@ -133,46 +133,18 @@ mod test {
             wallet.update_payment_note(req).await.unwrap();
         }
 
-        async fn test_signup_and_provision<D>(
+        async fn test_signup<D>(
             wallet: &LexeWallet<D>,
             rng: &mut SysRng,
             root_seed: &RootSeed,
         ) {
-            let partner: Option<UserPk> = None;
-            let signup_code: Option<String> = None;
-            let allow_gvfs_access = false;
-            let backup_password: Option<&str> = None;
-            let google_auth_code: Option<String> = None;
-
-            wallet
-                .signup_and_provision(
-                    rng,
-                    root_seed,
-                    partner,
-                    signup_code,
-                    allow_gvfs_access,
-                    backup_password,
-                    google_auth_code,
-                )
-                .await
-                .unwrap();
+            let partner_pk: Option<UserPk> = None;
+            wallet.signup(rng, root_seed, partner_pk).await.unwrap();
         }
 
-        async fn test_ensure_provisioned<D>(wallet: &LexeWallet<D>) {
+        async fn test_provision<D>(wallet: &LexeWallet<D>) {
             let credentials_ref: CredentialsRef<'_> = todo!();
-            let allow_gvfs_access = false;
-            let encrypted_seed: Option<Vec<u8>> = None;
-            let google_auth_code: Option<String> = None;
-
-            wallet
-                .ensure_provisioned(
-                    credentials_ref,
-                    allow_gvfs_access,
-                    encrypted_seed,
-                    google_auth_code,
-                )
-                .await
-                .unwrap();
+            wallet.provision(credentials_ref).await.unwrap();
         }
 
         // --- PaymentsDb methods ---

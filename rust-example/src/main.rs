@@ -53,11 +53,14 @@ async fn run() -> anyhow::Result<()> {
         ));
     };
 
-    // Data directory for persistence. Defaults to `.lexe_data` in the current
-    // directory. Override with LEXE_DATA_DIR environment variable.
+    // Data directory for persistence. Defaults to `~/.lexe`.
+    // Override with LEXE_DATA_DIR environment variable.
     let lexe_data_dir = env::var("LEXE_DATA_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from(".lexe_data"));
+        .unwrap_or_else(|_| {
+            let home = env::var("HOME").expect("HOME env var not set");
+            PathBuf::from(home).join(".lexe")
+        });
 
     // Initialize cryptographic RNG.
     let mut rng = SysRng::new();
