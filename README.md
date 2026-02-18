@@ -76,32 +76,73 @@ lexe-sdk = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-publi
 Basic usage:
 
 ```rust
+use std::str::FromStr;
+
 use lexe_sdk::{
     config::WalletEnvConfig,
-    types::{Credentials, RootSeed, SysRng},
-    wallet::LexeWallet,
+    types::{
+        Credentials, LxInvoice, RootSeed, SdkCreateInvoiceRequest,
+        SdkPayInvoiceRequest, SysRng,
+    },
+    wallet::{LexeWallet, default_lexe_data_dir},
 };
 
-// Initialize wallet
 let mut rng = SysRng::new();
+
+// Create a wallet config for mainnet (or testnet3() for testing)
 let env_config = WalletEnvConfig::mainnet();
+
+// Load or create root seed from seedphrase file
+let lexe_data_dir = default_lexe_data_dir()?;
+let seedphrase_path = env_config.seedphrase_path(&lexe_data_dir);
+let root_seed =
+    RootSeed::read_from_seedphrase_file(&seedphrase_path)?;
+let root_seed = match root_seed {
+    Some(seed) => seed,
+    None => {
+        let seed = RootSeed::from_rng(&mut rng);
+        seed.write_to_seedphrase_file(&seedphrase_path)?;
+        seed
+    }
+};
+let credentials = Credentials::RootSeed(root_seed);
+
+// Load or create wallet (uses default data dir ~/.lexe)
 let wallet = LexeWallet::load_or_fresh(
     &mut rng,
     env_config,
     credentials.as_ref(),
-    lexe_data_dir,
+    None,
 )?;
 
-// Ensure the node is provisioned to the latest version
-wallet.ensure_provisioned(credentials.as_ref(), false, None, None).await?;
+// Signup and provision the node (idempotent)
+let partner_pk = None;
+wallet.signup(&mut rng, &root_seed, partner_pk).await?;
 
 // Get node info
 let node_info = wallet.node_info().await?;
-println!("Balance: {} sats", node_info.balance);
+println!("Balance: {} sats", node_info.balance_sats);
 
 // Sync payments from the node
 let summary = wallet.sync_payments().await?;
 println!("Synced {} new payments", summary.num_new);
+
+// Create a Lightning invoice
+let invoice_req = SdkCreateInvoiceRequest {
+    expiration_secs: 3600,
+    amount: None,
+    description: Some("VPN subscription (1 month)".to_string()),
+};
+let invoice_resp = wallet.create_invoice(invoice_req).await?;
+
+// Pay an invoice
+let invoice = LxInvoice::from_str("lnbc1pjlue...")?;
+let pay_req = SdkPayInvoiceRequest {
+    invoice,
+    fallback_amount: None,
+    note: Some("Mass-produced mass-market Miller Lite".to_string()),
+};
+let pay_resp = wallet.pay_invoice(pay_req).await?;
 ```
 
 Run the example:
