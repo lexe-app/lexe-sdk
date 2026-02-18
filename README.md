@@ -66,11 +66,11 @@ how to:
 - Create Lightning invoices
 - Sync and query payments from the local database
 
-Add `lexe-sdk` to your `Cargo.toml`:
+Add `lexe` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexe-sdk = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-public" }
+lexe = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-public" }
 ```
 
 Basic usage:
@@ -78,41 +78,37 @@ Basic usage:
 ```rust
 use std::str::FromStr;
 
-use lexe_sdk::{
+use lexe::{
     config::WalletEnvConfig,
+    data_dir,
     types::{
         Credentials, LxInvoice, RootSeed, SdkCreateInvoiceRequest,
         SdkPayInvoiceRequest, SysRng,
     },
-    wallet::{LexeWallet, default_lexe_data_dir},
+    wallet::LexeWallet,
 };
-
-let mut rng = SysRng::new();
 
 // Create a wallet config for mainnet (or testnet3() for testing)
 let env_config = WalletEnvConfig::mainnet();
 
-// Load or create root seed from seedphrase file
-let lexe_data_dir = default_lexe_data_dir()?;
-let seedphrase_path = env_config.seedphrase_path(&lexe_data_dir);
-let root_seed =
-    RootSeed::read_from_seedphrase_file(&seedphrase_path)?;
-let root_seed = match root_seed {
+// Load root seed from ~/.lexe, or create a fresh one
+let mut rng = SysRng::new();
+let root_seed = match data_dir::read_seed(env_config.wallet_env)? {
     Some(seed) => seed,
     None => {
         let seed = RootSeed::from_rng(&mut rng);
-        seed.write_to_seedphrase_file(&seedphrase_path)?;
+        data_dir::write_seed(&seed, env_config.wallet_env)?;
         seed
     }
 };
 let credentials = Credentials::RootSeed(root_seed);
 
-// Load or create wallet (uses default data dir ~/.lexe)
+// Load or create wallet (data stored in ~/.lexe)
 let wallet = LexeWallet::load_or_fresh(
     &mut rng,
     env_config,
     credentials.as_ref(),
-    None,
+    None, // Uses ~/.lexe by default
 )?;
 
 // Signup and provision the node (idempotent)
@@ -122,10 +118,6 @@ wallet.signup(&mut rng, &root_seed, partner_pk).await?;
 // Get node info
 let node_info = wallet.node_info().await?;
 println!("Balance: {} sats", node_info.balance_sats);
-
-// Sync payments from the node
-let summary = wallet.sync_payments().await?;
-println!("Synced {} new payments", summary.num_new);
 
 // Create a Lightning invoice
 let invoice_req = SdkCreateInvoiceRequest {
@@ -143,6 +135,10 @@ let pay_req = SdkPayInvoiceRequest {
     note: Some("Mass-produced mass-market Miller Lite".to_string()),
 };
 let pay_resp = wallet.pay_invoice(pay_req).await?;
+
+// Sync payments from the node
+let summary = wallet.sync_payments().await?;
+println!("Synced {} new payments", summary.num_new);
 ```
 
 Run the example:

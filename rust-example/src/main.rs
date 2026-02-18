@@ -9,9 +9,9 @@
 //!
 //! See the README.md for setup instructions.
 
-use std::{env, path::PathBuf, str::FromStr};
+use std::{env, str::FromStr};
 
-use lexe_sdk::{
+use lexe::{
     anyhow::{self, Context},
     config::WalletEnvConfig,
     tracing::info,
@@ -19,7 +19,7 @@ use lexe_sdk::{
         ClientCredentials, Credentials, RootSeed, SdkCreateInvoiceRequest,
         SdkGetPaymentRequest, SysRng,
     },
-    wallet::{LexeWallet, default_lexe_data_dir},
+    wallet::LexeWallet,
 };
 
 fn main() -> anyhow::Result<()> {
@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
     let _ = dotenvy::dotenv();
 
     // (Optional) Set up Lexe's `tracing` logger.
-    lexe_sdk::init_logger("info");
+    lexe::init_logger("info");
     info!("Initializing program.");
 
     let rt = tokio::runtime::Builder::new_current_thread()
@@ -47,76 +47,82 @@ async fn run() -> anyhow::Result<()> {
     // For Bitcoin mainnet, use `WalletEnvConfig::mainnet()`.
     let env_config = WalletEnvConfig::testnet3();
 
-    // Data directory for persistence. Defaults to `~/.lexe`.
-    let lexe_data_dir = env::var("LEXE_DATA_DIR")
-        .map(PathBuf::from)
-        .unwrap_or(default_lexe_data_dir()?);
-
     // Various ways of loading or creating Lexe credentials:
     // 1. LEXE_CLIENT_CREDENTIALS env var (base64 JSON blob)
     // 2. LEXE_ROOT_SEED env var (hex string)
-    // 3. Read seedphrase file from data dir
-    // 4. Generate fresh RootSeed and write to data dir
+    // 3. Read seedphrase file from ~/.lexe
+    // 4. Generate fresh RootSeed and write to ~/.lexe
+    let lexe_data_dir = lexe::default_lexe_data_dir()?;
     let seedphrase_path = env_config.seedphrase_path(&lexe_data_dir);
+    let is_new_seed;
     let credentials = if let Ok(creds_str) = env::var("LEXE_CLIENT_CREDENTIALS")
     {
         let creds = ClientCredentials::try_from_base64_blob(&creds_str)
             .context("Failed to parse LEXE_CLIENT_CREDENTIALS")?;
         info!("Using LEXE_CLIENT_CREDENTIALS");
+        is_new_seed = false;
         Credentials::ClientCredentials(creds)
     } else if let Ok(seed_hex) = env::var("LEXE_ROOT_SEED") {
         let root_seed = RootSeed::from_str(&seed_hex)
             .context("Failed to parse LEXE_ROOT_SEED (expected 64 hex)")?;
         info!("Using LEXE_ROOT_SEED");
+        is_new_seed = false;
         Credentials::RootSeed(root_seed)
-    } else if let Some(root_seed) =
-        RootSeed::read_from_seedphrase_file(&seedphrase_path)?
-    {
-        info!(path = %seedphrase_path.display(), "Loaded seedphrase");
+    } else if let Some(root_seed) = env_config.read_seed()? {
+        info!("Loaded seedphrase from {}", seedphrase_path.display());
+        is_new_seed = false;
         Credentials::RootSeed(root_seed)
     } else {
         info!("No credentials found, generating fresh RootSeed");
-        let root_seed = RootSeed::from_rng(&mut rng);
-        root_seed.write_to_seedphrase_file(&seedphrase_path)?;
-        info!(path = %seedphrase_path.display(), "Wrote seedphrase");
-        Credentials::RootSeed(root_seed)
+        is_new_seed = true;
+        Credentials::RootSeed(RootSeed::from_rng(&mut rng))
     };
 
-    // Load or create wallet (uses default data dir ~/.lexe)
+    // Load or create wallet (data stored in ~/.lexe)
+    let lexe_data_dir = None; // Use ~/.lexe by default, set to override
     let wallet = LexeWallet::load_or_fresh(
         &mut rng,
-        env_config,
+        env_config.clone(),
         credentials.as_ref(),
-        None,
+        lexe_data_dir,
     )
     .context("Failed to load wallet")?;
 
-    // Initial signup and provisioning of the node.
-    // This operation is idempotent, so it's ok to call if already done.
     if let Credentials::RootSeed(ref root_seed) = credentials {
-        // Set to your company's UserPk to earn a share of this wallet's fees.
-        let partner_pk = None;
-        wallet
-            .signup(&mut rng, root_seed, partner_pk)
-            .await
-            .context("Failed to signup and provision")?;
-        info!("Signup and provision complete");
-    }
+        if is_new_seed {
+            // Initial signup and provisioning of the node.
+            // This is idempotent: calling this for existing users is safe.
+            // Set partner_pk to your company's UserPk to earn fee revenue.
+            let partner_pk = None;
+            wallet
+                .signup(&mut rng, root_seed, partner_pk)
+                .await
+                .context("Failed to signup and provision")?;
+            info!("Signup and initial provision complete");
 
-    // For existing wallets, always call provision to ensure we're up-to-date.
-    // This operation is also idempotent.
-    wallet
-        .provision(credentials.as_ref())
-        .await
-        .context("Failed to ensure node is provisioned")?;
-    info!("Node is provisioned and ready");
+            // Persist the seed. The next time we run, we'll read the existing seed.
+            env_config.write_seed(root_seed)?;
+            info!("Wrote seedphrase to {}", seedphrase_path.display());
+        } else {
+            // Ensure we're provisioned to all recent trusted releases.
+            // Trusted releases are in `releases.json` in the Lexe repository.
+            //
+            // TODO(max): Can also allow ClientCredentials to provision once
+            // delegated provisioning is implemented.
+            wallet
+                .provision(credentials.as_ref())
+                .await
+                .context("Failed to ensure node is provisioned")?;
+            info!("Node is provisioned to latest release");
+        }
+    }
 
     // Get node info
     let node_info = wallet
         .node_info()
         .await
         .context("Failed to get node info")?;
-    let node_info_json = lexe_sdk::serde_json::to_string_pretty(&node_info)
+    let node_info_json = lexe::serde_json::to_string_pretty(&node_info)
         .context("Failed to serialize node info")?;
     info!("Node info:\n{node_info_json}");
 
@@ -153,7 +159,7 @@ async fn run() -> anyhow::Result<()> {
         .context("Failed to get payment")?
         .payment
         .context("Payment not found")?;
-    let payment_json = lexe_sdk::serde_json::to_string_pretty(&payment)
+    let payment_json = lexe::serde_json::to_string_pretty(&payment)
         .context("Failed to serialize payment")?;
     info!("Created payment:\n{payment_json}");
 

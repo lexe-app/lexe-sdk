@@ -10,7 +10,8 @@ edition = "2021"
 [dependencies]
 
 # `sdk-rust` is the name of the Rust SDK crate within Lexe's monorepo.
-lexe-sdk = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-public" }
+lexe = { package = "sdk-rust", git = "https://github.com/lexe-app/lexe-public" }
+# lexe = { package = "sdk-rust", path = "../../public/sdk-rust" }
 
 dotenvy = "0.15"
 tokio = { version = "1", features = ["rt", "macros"] }

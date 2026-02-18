@@ -6,12 +6,12 @@
 mod test {
     use std::path::PathBuf;
 
-    use lexe_sdk::{
+    use lexe::{
         config::{WalletEnvConfig, WalletUserConfig},
         payments_db::{PaymentSyncSummary, PaymentsDb},
         types::{
             BasicPaymentV2, ClientCredentials, Credentials, CredentialsRef,
-            PaymentCreatedIndex, PaymentUpdatedIndex, RootSeed,
+            LxInvoice, PaymentCreatedIndex, PaymentUpdatedIndex, RootSeed,
             SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
             SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
             SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment, SysRng,
@@ -49,30 +49,45 @@ mod test {
             Credentials::ClientCredentials(client_creds);
         let credentials_ref: CredentialsRef<'_> = credentials.as_ref();
 
-        // --- LexeWallet constructors ---
-        let env_config: WalletEnvConfig = todo!();
-        let lexe_data_dir: PathBuf = todo!();
+        // --- Seed file I/O ---
+        let data_dir: PathBuf = lexe::default_lexe_data_dir().unwrap();
+        let env_config: WalletEnvConfig = WalletEnvConfig::mainnet();
+        // WalletEnvConfig methods
+        let _seedphrase_path: PathBuf = env_config.seedphrase_path(&data_dir);
+        let _root_seed: Option<RootSeed> = env_config.read_seed().unwrap();
+        let _: () = env_config.write_seed(root_seed).unwrap();
+        // WalletEnv methods
+        let _seedphrase_path: PathBuf =
+            env_config.wallet_env.seedphrase_path(&data_dir);
+        let _root_seed: Option<RootSeed> =
+            env_config.wallet_env.read_seed().unwrap();
+        let _: () = env_config.wallet_env.write_seed(root_seed).unwrap();
+        // RootSeed path-based methods
+        let _root_seed: Option<RootSeed> =
+            RootSeed::read_from_path(&_seedphrase_path).unwrap();
+        let _: () = root_seed.write_to_path(&_seedphrase_path).unwrap();
 
+        // --- LexeWallet constructors ---
         // LexeWallet<WithDb>
         let wallet_with_db: LexeWallet<WithDb> = LexeWallet::fresh(
             rng,
             env_config.clone(),
             credentials_ref,
-            lexe_data_dir.clone(),
+            Some(data_dir.clone()),
         )
         .unwrap();
         let wallet_with_db: Option<LexeWallet<WithDb>> = LexeWallet::load(
             rng,
             env_config.clone(),
             credentials_ref,
-            lexe_data_dir.clone(),
+            Some(data_dir.clone()),
         )
         .unwrap();
         let wallet_with_db: LexeWallet<WithDb> = LexeWallet::load_or_fresh(
             rng,
             env_config.clone(),
             credentials_ref,
-            lexe_data_dir,
+            Some(data_dir),
         )
         .unwrap();
 
@@ -85,7 +100,7 @@ mod test {
         let payments_db: &PaymentsDb<_> = wallet_with_db.payments_db();
 
         async fn test_wallet_with_db_async(
-            wallet: &LexeWallet<lexe_sdk::wallet::WithDb>,
+            wallet: &LexeWallet<lexe::wallet::WithDb>,
         ) {
             let summary: PaymentSyncSummary =
                 wallet.sync_payments().await.unwrap();
@@ -114,7 +129,12 @@ mod test {
             let _: PaymentCreatedIndex = resp.index;
 
             // pay_invoice
-            let req: SdkPayInvoiceRequest = todo!();
+            let invoice: LxInvoice = todo!();
+            let req = SdkPayInvoiceRequest {
+                invoice,
+                fallback_amount: None,
+                note: Some("Test payment".to_string()),
+            };
             let resp: SdkPayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
