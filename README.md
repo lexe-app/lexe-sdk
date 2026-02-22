@@ -80,7 +80,6 @@ use std::str::FromStr;
 
 use lexe::{
     config::WalletEnvConfig,
-    data_dir,
     types::{
         Credentials, LxInvoice, RootSeed, SdkCreateInvoiceRequest,
         SdkPayInvoiceRequest, SysRng,
@@ -93,11 +92,11 @@ let env_config = WalletEnvConfig::mainnet();
 
 // Load root seed from ~/.lexe, or create a fresh one
 let mut rng = SysRng::new();
-let root_seed = match data_dir::read_seed(env_config.wallet_env)? {
+let root_seed = match env_config.read_seed()? {
     Some(seed) => seed,
     None => {
         let seed = RootSeed::from_rng(&mut rng);
-        data_dir::write_seed(&seed, env_config.wallet_env)?;
+        env_config.write_seed(&seed)?;
         seed
     }
 };
@@ -117,7 +116,7 @@ wallet.signup(&mut rng, &root_seed, partner_pk).await?;
 
 // Get node info
 let node_info = wallet.node_info().await?;
-println!("Balance: {} sats", node_info.balance_sats);
+println!("Balance: {} sats", node_info.balance);
 
 // Create a Lightning invoice
 let invoice_req = SdkCreateInvoiceRequest {
