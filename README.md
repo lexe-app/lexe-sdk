@@ -7,7 +7,7 @@ This repo contains public-facing docs and examples for the Lexe Rust SDK.
 The `sdk-rust` source code can be found in the Lexe monorepo at:
 <https://github.com/lexe-app/lexe-public/tree/master/sdk-rust>
 
-## Quickstart
+# Quickstart
 
 ### Download the Lexe Wallet app
 
