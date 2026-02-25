@@ -168,6 +168,7 @@ mod test {
                 expiration_secs: 3600,
                 amount: None,
                 description: None,
+                payer_note: None,
             };
             let resp: SdkCreateInvoiceResponse =
                 wallet.create_invoice(req).await.unwrap();
@@ -183,6 +184,7 @@ mod test {
                 invoice,
                 fallback_amount: None,
                 note: Some("Test payment".to_string()),
+                payer_note: None,
             };
             let resp: SdkPayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();

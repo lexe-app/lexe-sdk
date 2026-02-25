@@ -131,6 +131,7 @@ let invoice_req = SdkCreateInvoiceRequest {
     expiration_secs: 3600,
     amount: None,
     description: Some("VPN subscription (1 month)".to_string()),
+    payer_note: None,
 };
 let invoice_resp = wallet.create_invoice(invoice_req).await?;
 
@@ -140,6 +141,7 @@ let pay_req = SdkPayInvoiceRequest {
     invoice,
     fallback_amount: None,
     note: Some("Mass-produced mass-market Miller Lite".to_string()),
+    payer_note: None,
 };
 let pay_resp = wallet.pay_invoice(pay_req).await?;
 
