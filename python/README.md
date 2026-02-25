@@ -82,10 +82,10 @@ async def create_user_node():
     config = lexe.WalletEnvConfig.mainnet()
 
     # Try to load an existing seed from ~/.lexe, or create a fresh one
-    seed = lexe.read_seed(config)
+    seed = config.read_seed()
     is_new_seed = seed is None
     if is_new_seed:
-        seed = lexe.RootSeed(seed_bytes=os.urandom(32))
+        seed = lexe.RootSeed(os.urandom(32))
 
     # Load or create wallet (data stored in ~/.lexe by default)
     wallet = lexe.LexeWallet.load_or_fresh(config, seed)
@@ -100,7 +100,7 @@ async def create_user_node():
 
         # Persist the seed so we can load it on subsequent runs.
         # Stored at ~/.lexe/seedphrase.txt (mainnet).
-        lexe.write_seed(seed, config)
+        config.write_seed(seed)
     else:
         # Ensure the node is running the latest enclave version
         await wallet.provision(seed)
@@ -123,7 +123,7 @@ import lexe
 
 async def main():
     config = lexe.WalletEnvConfig.mainnet()
-    seed = lexe.read_seed(config)
+    seed = config.read_seed()
     wallet = lexe.LexeWallet.load_or_fresh(config, seed)
     await wallet.provision(seed)
 
