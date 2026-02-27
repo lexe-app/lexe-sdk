@@ -81,8 +81,10 @@ use std::str::FromStr;
 use lexe::{
     config::WalletEnvConfig,
     types::{
-        Credentials, LxInvoice, RootSeed, SdkCreateInvoiceRequest,
-        SdkPayInvoiceRequest, SysRng,
+        auth::{Credentials, RootSeed},
+        bitcoin::LxInvoice,
+        command::{SdkCreateInvoiceRequest, SdkPayInvoiceRequest},
+        util::SysRng,
     },
     wallet::LexeWallet,
 };

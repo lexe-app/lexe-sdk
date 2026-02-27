@@ -16,8 +16,9 @@ use lexe::{
     config::WalletEnvConfig,
     tracing::info,
     types::{
-        ClientCredentials, Credentials, RootSeed, SdkCreateInvoiceRequest,
-        SdkGetPaymentRequest, SysRng,
+        auth::{ClientCredentials, Credentials, RootSeed},
+        command::{SdkCreateInvoiceRequest, SdkGetPaymentRequest},
+        util::SysRng,
     },
     wallet::LexeWallet,
 };

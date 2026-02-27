@@ -10,15 +10,23 @@ mod test {
         config::{WalletEnvConfig, WalletUserConfig},
         payments_db::{PaymentSyncSummary, PaymentsDb},
         types::{
-            Amount, BasicPaymentV2, ClientCredentials, ConfirmationPriority,
-            Credentials, CredentialsRef, LxInvoice, LxPaymentHash, LxPaymentId,
-            LxPaymentSecret, LxTxid, Measurement, NodePk, PaymentCreatedIndex,
-            PaymentDirection, PaymentKind, PaymentRail, PaymentStatus,
-            PaymentUpdatedIndex, RootSeed, SdkCreateInvoiceRequest,
-            SdkCreateInvoiceResponse, SdkGetPaymentRequest,
-            SdkGetPaymentResponse, SdkNodeInfo, SdkPayInvoiceRequest,
-            SdkPayInvoiceResponse, SdkPayment, SysRng, TimestampMs,
-            UpdatePaymentNote, UserPk,
+            auth::{
+                ClientCredentials, Credentials, CredentialsRef, Measurement,
+                NodePk, RootSeed, UserPk,
+            },
+            bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
+            command::{
+                SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
+                SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
+                SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment,
+                UpdatePaymentNote,
+            },
+            payment::{
+                BasicPaymentV2, LxPaymentHash, LxPaymentId, LxPaymentSecret,
+                PaymentCreatedIndex, PaymentDirection, PaymentKind,
+                PaymentRail, PaymentStatus, PaymentUpdatedIndex,
+            },
+            util::{SysRng, TimestampMs},
         },
         wallet::{LexeWallet, WithDb, WithoutDb},
     };
