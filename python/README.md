@@ -73,46 +73,42 @@ Wallet developers can programmatically create Lexe nodes for their users. Each
 user gets a self-custodial Lightning node running in a secure enclave.
 
 ```python
-import asyncio
 import os
 import lexe
 
-async def create_user_node():
-    # Create a wallet config for mainnet (or testnet3() for testing)
-    config = lexe.WalletEnvConfig.mainnet()
+# Create a wallet config for mainnet (or testnet3() for testing)
+config = lexe.WalletEnvConfig.mainnet()
 
-    # Try to load an existing seed from ~/.lexe, or create a fresh one
-    try:
-        seed = config.read_seed()
-        is_new_seed = False
-    except lexe.SeedFileError.NotFound:
-        seed = lexe.RootSeed(os.urandom(32))
-        is_new_seed = True
+# Try to load an existing seed from ~/.lexe, or create a fresh one
+try:
+    seed = config.read_seed()
+    is_new_seed = False
+except lexe.SeedFileError.NotFound:
+    seed = lexe.RootSeed(os.urandom(32))
+    is_new_seed = True
 
-    # Load or create wallet (data stored in ~/.lexe by default)
-    wallet = lexe.LexeWallet.load_or_fresh(config, seed)
+# Load or create wallet (data stored in ~/.lexe by default)
+wallet = lexe.LexeWallet.load_or_fresh(config, seed)
 
-    if is_new_seed:
-        # Sign up the user and provision their node.
-        # Pass your partner_user_pk to associate the node with your platform.
-        await wallet.signup(
-            root_seed=seed,
-            partner_pk=None,  # Your partner user_pk (hex), if applicable
-        )
+if is_new_seed:
+    # Sign up the user and provision their node.
+    # Pass your partner_user_pk to associate the node with your platform.
+    wallet.signup(
+        root_seed=seed,
+        partner_pk=None,  # Your partner user_pk (hex), if applicable
+    )
 
-        # Persist the seed so we can load it on subsequent runs.
-        # Stored at ~/.lexe/seedphrase.txt (mainnet).
-        config.write_seed(seed)
-    else:
-        # Ensure the node is running the latest enclave version
-        await wallet.provision(seed)
+    # Persist the seed so we can load it on subsequent runs.
+    # Stored at ~/.lexe/seedphrase.txt (mainnet).
+    config.write_seed(seed)
+else:
+    # Ensure the node is running the latest enclave version
+    wallet.provision(seed)
 
-    # The node is now live. Query its info
-    info = await wallet.node_info()
-    print(f"Node created! Public key: {info.node_pk}")
-    print(f"Balance: {info.balance_sats} sats")
-
-asyncio.run(create_user_node())
+# The node is now live. Query its info
+info = wallet.node_info()
+print(f"Node created! Public key: {info.node_pk}")
+print(f"Balance: {info.balance_sats} sats")
 ```
 
 ### Using the SDK
@@ -120,43 +116,39 @@ asyncio.run(create_user_node())
 Once a node is provisioned, you can create invoices, send payments, and more:
 
 ```python
-import asyncio
 import lexe
 
-async def main():
-    config = lexe.WalletEnvConfig.mainnet()
-    seed = config.read_seed()
-    wallet = lexe.LexeWallet.load_or_fresh(config, seed)
-    await wallet.provision(seed)
+config = lexe.WalletEnvConfig.mainnet()
+seed = config.read_seed()
+wallet = lexe.LexeWallet.load_or_fresh(config, seed)
+wallet.provision(seed)
 
-    # Get node info
-    info = await wallet.node_info()
-    print(f"Balance: {info.balance_sats} sats")
+# Get node info
+info = wallet.node_info()
+print(f"Balance: {info.balance_sats} sats")
 
-    # Create a Lightning invoice
-    invoice = await wallet.create_invoice(
-        expiration_secs=3600,
-        amount_sats=None,
-        description="Payment for coffee",
-    )
-    print(f"Invoice: {invoice.invoice}")
+# Create a Lightning invoice
+invoice = wallet.create_invoice(
+    expiration_secs=3600,
+    amount_sats=None,
+    description="Payment for coffee",
+)
+print(f"Invoice: {invoice.invoice}")
 
-    # Pay a Lightning invoice
-    payment = await wallet.pay_invoice(
-        invoice="lnbc...",
-        fallback_amount_sats=None,
-        note="Paying for coffee",
-    )
+# Pay a Lightning invoice
+payment = wallet.pay_invoice(
+    invoice="lnbc...",
+    fallback_amount_sats=None,
+    note="Paying for coffee",
+)
 
-    # Sync and list payments
-    await wallet.sync_payments()
-    payments = wallet.list_payments(
-        filter=lexe.PaymentFilter.ALL,
-        offset=0,
-        limit=10,
-    )
-    for p in payments.payments:
-        print(f"  {p.status}: {p.amount_sats} sats")
-
-asyncio.run(main())
+# Sync and list payments
+wallet.sync_payments()
+payments = wallet.list_payments(
+    filter=lexe.PaymentFilter.ALL,
+    offset=0,
+    limit=10,
+)
+for p in payments.payments:
+    print(f"  {p.status}: {p.amount_sats} sats")
 ```
