@@ -82,10 +82,12 @@ async def create_user_node():
     config = lexe.WalletEnvConfig.mainnet()
 
     # Try to load an existing seed from ~/.lexe, or create a fresh one
-    seed = config.read_seed()
-    is_new_seed = seed is None
-    if is_new_seed:
+    try:
+        seed = config.read_seed()
+        is_new_seed = False
+    except lexe.SeedFileError.NotFound:
         seed = lexe.RootSeed(os.urandom(32))
+        is_new_seed = True
 
     # Load or create wallet (data stored in ~/.lexe by default)
     wallet = lexe.LexeWallet.load_or_fresh(config, seed)
@@ -95,7 +97,7 @@ async def create_user_node():
         # Pass your partner_user_pk to associate the node with your platform.
         await wallet.signup(
             root_seed=seed,
-            partner_user_pk=None,  # Your partner user_pk (hex), if applicable
+            partner_pk=None,  # Your partner user_pk (hex), if applicable
         )
 
         # Persist the seed so we can load it on subsequent runs.
