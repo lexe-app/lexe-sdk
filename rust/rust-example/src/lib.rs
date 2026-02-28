@@ -118,6 +118,11 @@ mod test {
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
             let _: bool = summary.any_changes();
+
+            // wait_for_payment
+            let index: PaymentCreatedIndex = todo!();
+            let _: SdkPayment =
+                wallet.wait_for_payment(index, None).await.unwrap();
         }
 
         // --- LexeWallet<D> generic methods ---
