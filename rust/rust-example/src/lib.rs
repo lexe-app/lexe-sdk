@@ -19,7 +19,7 @@ mod test {
                 SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
                 SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
                 SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment,
-                UpdatePaymentNote,
+                SdkUpdatePaymentNoteRequest,
             },
             payment::{
                 LxPaymentHash, LxPaymentId, LxPaymentSecret,
@@ -210,7 +210,7 @@ mod test {
             let _: Option<ConfirmationPriority> = payment.priority;
 
             // update_payment_note
-            let req: UpdatePaymentNote = todo!();
+            let req: SdkUpdatePaymentNoteRequest = todo!();
             wallet.update_payment_note(req).await.unwrap();
         }
 
