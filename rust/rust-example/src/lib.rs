@@ -171,7 +171,8 @@ mod test {
             let resp: SdkGetPaymentResponse =
                 wallet.get_payment(req).await.unwrap();
             let payment: SdkPayment = resp.payment.unwrap();
-            let _: LxPaymentId = payment.id;
+            let _: PaymentCreatedIndex = payment.index;
+            let _: LxPaymentId = payment.index.id;
             let _: PaymentRail = payment.rail;
             let _: PaymentKind = payment.kind;
             let _: PaymentDirection = payment.direction;
