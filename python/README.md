@@ -36,10 +36,16 @@ password. This will create a new self-custody Bitcoin+Lightning wallet that runs
 in a secure enclave in the cloud; you can now send and receive Lightning
 payments 24/7!
 
-### Export client credentials for the SDK
+### Configure credentials for the SDK
 
-To control your wallet using the Lexe Python SDK, you'll first need to export
-client credentials from the app:
+The Python SDK supports two credential types:
+
+- `ClientCredentials`: control an existing wallet created in the Lexe app.
+- `RootSeed`: sign up users and manage wallets from your backend.
+
+**Option 1: `ClientCredentials` (existing app wallet)**
+
+To control a wallet created in the app, export client credentials:
 
 1. Open the Lexe app > Menu sidebar > "SDK clients" > "Create new client"
 2. Copy the client credentials string
@@ -55,8 +61,11 @@ $ echo 'LEXE_CLIENT_CREDENTIALS=eyJsZXhlX2F1dGhfdG9rZ...TA0In0' > .env
 $ chmod 600 .env
 ```
 
-If you want to use root-seed based auth or signup your own users to Lexe,
-this is a bit more involved. Please get in touch via the signup form.
+**Option 2: `RootSeed` (programmatic signup)**
+
+To sign up users and manage wallets from your backend, use `RootSeed`
+credentials. The examples below show this flow with `load_or_fresh`,
+`signup`, and `provision`.
 
 ### Install the SDK
 
