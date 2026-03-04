@@ -8,7 +8,6 @@ mod test {
 
     use lexe::{
         config::{WalletEnvConfig, WalletUserConfig},
-        payments_db::{PaymentSyncSummary, PaymentsDb},
         types::{
             Order,
             auth::{
@@ -23,9 +22,9 @@ mod test {
                 SdkPayInvoiceResponse, SdkPayment, UpdatePaymentNote,
             },
             payment::{
-                BasicPaymentV2, LxPaymentHash, LxPaymentId, LxPaymentSecret,
+                LxPaymentHash, LxPaymentId, LxPaymentSecret,
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
-                PaymentKind, PaymentRail, PaymentStatus, PaymentUpdatedIndex,
+                PaymentKind, PaymentRail, PaymentStatus,
             },
             util::{SysRng, TimestampMs},
         },
@@ -109,13 +108,11 @@ mod test {
                 .unwrap();
 
         // --- LexeWallet<WithDb> methods ---
-        let payments_db: &PaymentsDb<_> = wallet_with_db.payments_db();
 
         async fn test_wallet_with_db_async(
             wallet: &LexeWallet<lexe::wallet::WithDb>,
         ) {
-            let summary: PaymentSyncSummary =
-                wallet.sync_payments().await.unwrap();
+            let summary = wallet.sync_payments().await.unwrap();
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
 
@@ -223,30 +220,5 @@ mod test {
             wallet.provision(credentials_ref).await.unwrap();
         }
 
-        // --- PaymentsDb methods ---
-        // Test PaymentsDb methods using a closure that captures the type
-        let test_payments_db = |db: &PaymentsDb<_>| {
-            let _ = db.clear();
-            let _: usize = db.num_payments();
-            let _: usize = db.num_pending();
-            let _: usize = db.num_finalized();
-            let _: usize = db.num_pending_not_junk();
-            let _: usize = db.num_finalized_not_junk();
-            let _: Option<PaymentUpdatedIndex> = db.latest_updated_index();
-
-            let created_index: PaymentCreatedIndex = todo!();
-            let _: Option<BasicPaymentV2> =
-                db.get_payment_by_created_index(&created_index);
-            let _: Option<BasicPaymentV2> = db.get_payment_by_scroll_idx(0);
-            let _: Option<BasicPaymentV2> =
-                db.get_pending_payment_by_scroll_idx(0);
-            let _: Option<BasicPaymentV2> =
-                db.get_pending_not_junk_payment_by_scroll_idx(0);
-            let _: Option<BasicPaymentV2> =
-                db.get_finalized_payment_by_scroll_idx(0);
-            let _: Option<BasicPaymentV2> =
-                db.get_finalized_not_junk_payment_by_scroll_idx(0);
-        };
-        test_payments_db(payments_db);
     }
 }
