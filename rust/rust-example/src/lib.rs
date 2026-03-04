@@ -204,7 +204,7 @@ mod test {
         // --- PaymentsDb methods ---
         // Test PaymentsDb methods using a closure that captures the type
         let test_payments_db = |db: &PaymentsDb<_>| {
-            let _ = db.delete();
+            let _ = db.clear();
             let _: usize = db.num_payments();
             let _: usize = db.num_pending();
             let _: usize = db.num_finalized();
