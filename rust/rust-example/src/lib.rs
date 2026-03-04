@@ -16,10 +16,11 @@ mod test {
             },
             bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
             command::{
-                ListPaymentsResponse, SdkCreateInvoiceRequest,
-                SdkCreateInvoiceResponse, SdkGetPaymentRequest,
-                SdkGetPaymentResponse, SdkNodeInfo, SdkPayInvoiceRequest,
-                SdkPayInvoiceResponse, SdkPayment, UpdatePaymentNote,
+                ListPaymentsResponse, PaymentSyncSummary,
+                SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
+                SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
+                SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment,
+                UpdatePaymentNote,
             },
             payment::{
                 LxPaymentHash, LxPaymentId, LxPaymentSecret,
@@ -112,7 +113,8 @@ mod test {
         async fn test_wallet_with_db_async(
             wallet: &LexeWallet<lexe::wallet::WithDb>,
         ) {
-            let summary = wallet.sync_payments().await.unwrap();
+            let summary: PaymentSyncSummary =
+                wallet.sync_payments().await.unwrap();
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
 
