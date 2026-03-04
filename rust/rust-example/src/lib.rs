@@ -10,21 +10,22 @@ mod test {
         config::{WalletEnvConfig, WalletUserConfig},
         payments_db::{PaymentSyncSummary, PaymentsDb},
         types::{
+            Order,
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
                 NodePk, RootSeed, UserPk,
             },
             bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
             command::{
-                SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
-                SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
-                SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment,
-                UpdatePaymentNote,
+                ListPaymentsResponse, SdkCreateInvoiceRequest,
+                SdkCreateInvoiceResponse, SdkGetPaymentRequest,
+                SdkGetPaymentResponse, SdkNodeInfo, SdkPayInvoiceRequest,
+                SdkPayInvoiceResponse, SdkPayment, UpdatePaymentNote,
             },
             payment::{
                 BasicPaymentV2, LxPaymentHash, LxPaymentId, LxPaymentSecret,
-                PaymentCreatedIndex, PaymentDirection, PaymentKind,
-                PaymentRail, PaymentStatus, PaymentUpdatedIndex,
+                PaymentCreatedIndex, PaymentDirection, PaymentFilter,
+                PaymentKind, PaymentRail, PaymentStatus, PaymentUpdatedIndex,
             },
             util::{SysRng, TimestampMs},
         },
@@ -117,6 +118,25 @@ mod test {
                 wallet.sync_payments().await.unwrap();
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
+
+            let resp: ListPaymentsResponse = wallet
+                .list_payments(&PaymentFilter::All, None, None, None);
+            let _: Vec<SdkPayment> = resp.payments;
+            let _: Option<PaymentCreatedIndex> = resp.next_index;
+
+            // Test all filter variants
+            let _ = wallet.list_payments(
+                &PaymentFilter::Pending,
+                Some(Order::Asc),
+                Some(10),
+                None,
+            );
+            let _ =
+                wallet.list_payments(&PaymentFilter::Completed, None, None, None);
+            let _ =
+                wallet.list_payments(&PaymentFilter::Failed, None, None, None);
+            let _ =
+                wallet.list_payments(&PaymentFilter::Finalized, None, None, None);
 
             wallet.clear_payments().unwrap();
 

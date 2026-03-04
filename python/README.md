@@ -144,11 +144,7 @@ payment = wallet.pay_invoice(
 
 # Sync and list payments
 wallet.sync_payments()
-payments = wallet.list_payments(
-    filter=lexe.PaymentFilter.ALL,
-    offset=0,
-    limit=10,
-)
+payments = wallet.list_payments(filter=lexe.PaymentFilter.ALL)
 for p in payments.payments:
     print(f"  {p.status}: {p.amount_sats} sats")
 ```
