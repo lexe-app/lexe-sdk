@@ -117,7 +117,6 @@ mod test {
                 wallet.sync_payments().await.unwrap();
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
-            let _: bool = summary.any_changes();
 
             // wait_for_payment
             let index: PaymentCreatedIndex = todo!();
