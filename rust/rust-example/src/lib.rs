@@ -118,6 +118,8 @@ mod test {
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
 
+            wallet.clear_payments().unwrap();
+
             // wait_for_payment
             let index: PaymentCreatedIndex = todo!();
             let _: SdkPayment =
