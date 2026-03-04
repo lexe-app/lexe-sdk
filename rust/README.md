@@ -84,7 +84,6 @@ use lexe::{
         auth::{Credentials, RootSeed},
         bitcoin::LxInvoice,
         command::{SdkCreateInvoiceRequest, SdkPayInvoiceRequest},
-        util::SysRng,
     },
     wallet::LexeWallet,
 };
@@ -93,7 +92,6 @@ use lexe::{
 let env_config = WalletEnvConfig::mainnet();
 
 // Load root seed from ~/.lexe, or create a fresh one
-let mut rng = SysRng::new();
 let is_new_seed;
 let root_seed = match env_config.read_seed()? {
     Some(seed) => {
@@ -102,14 +100,13 @@ let root_seed = match env_config.read_seed()? {
     }
     None => {
         is_new_seed = true;
-        RootSeed::from_rng(&mut rng)
+        RootSeed::generate()
     }
 };
 let credentials = Credentials::RootSeed(root_seed.clone());
 
 // Load or create wallet (data stored in ~/.lexe)
 let wallet = LexeWallet::load_or_fresh(
-    &mut rng,
     env_config.clone(),
     credentials.as_ref(),
     None, // Uses ~/.lexe by default
@@ -118,7 +115,7 @@ let wallet = LexeWallet::load_or_fresh(
 if is_new_seed {
     // Signup with Lexe and provision the node (idempotent)
     let partner_pk = None;
-    wallet.signup(&mut rng, &root_seed, partner_pk).await?;
+    wallet.signup(&root_seed, partner_pk).await?;
     env_config.write_seed(&root_seed)?;
 } else {
     // Ensure provisioned to latest trusted release

@@ -73,7 +73,6 @@ Wallet developers can programmatically create Lexe nodes for their users. Each
 user gets a self-custodial Lightning node running in a secure enclave.
 
 ```python
-import os
 import lexe
 
 # Create a wallet config for mainnet (or testnet3() for testing)
@@ -84,7 +83,7 @@ try:
     seed = config.read_seed()
     is_new_seed = False
 except lexe.SeedFileError.NotFound:
-    seed = lexe.RootSeed(os.urandom(32))
+    seed = lexe.RootSeed.generate()
     is_new_seed = True
 
 # Load or create wallet (data stored in ~/.lexe by default)

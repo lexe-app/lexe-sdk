@@ -9,7 +9,6 @@ mod test {
     use lexe::{
         config::{WalletEnvConfig, WalletUserConfig},
         types::{
-            Order,
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
                 NodePk, RootSeed, UserPk,
@@ -27,7 +26,8 @@ mod test {
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
                 PaymentKind, PaymentRail, PaymentStatus,
             },
-            util::{SysRng, TimestampMs},
+            util::TimestampMs,
+            Order,
         },
         wallet::{LexeWallet, WithDb, WithoutDb},
     };
@@ -53,7 +53,6 @@ mod test {
         let _env_config: WalletEnvConfig = WalletEnvConfig::testnet3();
 
         // --- Credential types ---
-        let rng: &mut SysRng = todo!();
         let root_seed: &RootSeed = todo!();
         let client_creds: ClientCredentials = todo!();
         let credentials: Credentials = Credentials::RootSeed(todo!());
@@ -82,21 +81,18 @@ mod test {
         // --- LexeWallet constructors ---
         // LexeWallet<WithDb>
         let wallet_with_db: LexeWallet<WithDb> = LexeWallet::fresh(
-            rng,
             env_config.clone(),
             credentials_ref,
             Some(data_dir.clone()),
         )
         .unwrap();
         let wallet_with_db: Option<LexeWallet<WithDb>> = LexeWallet::load(
-            rng,
             env_config.clone(),
             credentials_ref,
             Some(data_dir.clone()),
         )
         .unwrap();
         let wallet_with_db: LexeWallet<WithDb> = LexeWallet::load_or_fresh(
-            rng,
             env_config.clone(),
             credentials_ref,
             Some(data_dir),
@@ -105,7 +101,7 @@ mod test {
 
         // LexeWallet<WithoutDb>
         let _wallet_without_db: LexeWallet<WithoutDb> =
-            LexeWallet::without_db(rng, env_config.clone(), credentials_ref)
+            LexeWallet::without_db(env_config.clone(), credentials_ref)
                 .unwrap();
 
         // --- LexeWallet<WithDb> methods ---
@@ -118,8 +114,8 @@ mod test {
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
 
-            let resp: ListPaymentsResponse = wallet
-                .list_payments(&PaymentFilter::All, None, None, None);
+            let resp: ListPaymentsResponse =
+                wallet.list_payments(&PaymentFilter::All, None, None, None);
             let _: Vec<SdkPayment> = resp.payments;
             let _: Option<PaymentCreatedIndex> = resp.next_index;
 
@@ -130,12 +126,20 @@ mod test {
                 Some(10),
                 None,
             );
-            let _ =
-                wallet.list_payments(&PaymentFilter::Completed, None, None, None);
+            let _ = wallet.list_payments(
+                &PaymentFilter::Completed,
+                None,
+                None,
+                None,
+            );
             let _ =
                 wallet.list_payments(&PaymentFilter::Failed, None, None, None);
-            let _ =
-                wallet.list_payments(&PaymentFilter::Finalized, None, None, None);
+            let _ = wallet.list_payments(
+                &PaymentFilter::Finalized,
+                None,
+                None,
+                None,
+            );
 
             wallet.clear_payments().unwrap();
 
@@ -208,19 +212,14 @@ mod test {
             wallet.update_payment_note(req).await.unwrap();
         }
 
-        async fn test_signup<D>(
-            wallet: &LexeWallet<D>,
-            rng: &mut SysRng,
-            root_seed: &RootSeed,
-        ) {
+        async fn test_signup<D>(wallet: &LexeWallet<D>, root_seed: &RootSeed) {
             let partner_pk: Option<UserPk> = None;
-            wallet.signup(rng, root_seed, partner_pk).await.unwrap();
+            wallet.signup(root_seed, partner_pk).await.unwrap();
         }
 
         async fn test_provision<D>(wallet: &LexeWallet<D>) {
             let credentials_ref: CredentialsRef<'_> = todo!();
             wallet.provision(credentials_ref).await.unwrap();
         }
-
     }
 }

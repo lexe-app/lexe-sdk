@@ -18,7 +18,6 @@ use lexe::{
     types::{
         auth::{ClientCredentials, Credentials, RootSeed},
         command::{SdkCreateInvoiceRequest, SdkGetPaymentRequest},
-        util::SysRng,
     },
     wallet::LexeWallet,
 };
@@ -41,9 +40,6 @@ fn main() -> anyhow::Result<()> {
 
 #[tracing::instrument(name = "rust-example")]
 async fn run() -> anyhow::Result<()> {
-    // Initialize cryptographic RNG.
-    let mut rng = SysRng::new();
-
     // Create a wallet config for testnet3.
     // For Bitcoin mainnet, use `WalletEnvConfig::mainnet()`.
     let env_config = WalletEnvConfig::testnet3();
@@ -76,13 +72,12 @@ async fn run() -> anyhow::Result<()> {
     } else {
         info!("No credentials found, generating fresh RootSeed");
         is_new_seed = true;
-        Credentials::RootSeed(RootSeed::from_rng(&mut rng))
+        Credentials::RootSeed(RootSeed::generate())
     };
 
     // Load or create wallet (data stored in ~/.lexe)
     let lexe_data_dir = None; // Use ~/.lexe by default, set to override
     let wallet = LexeWallet::load_or_fresh(
-        &mut rng,
         env_config.clone(),
         credentials.as_ref(),
         lexe_data_dir,
@@ -96,7 +91,7 @@ async fn run() -> anyhow::Result<()> {
             // Set partner_pk to your company's UserPk to earn fee revenue.
             let partner_pk = None;
             wallet
-                .signup(&mut rng, root_seed, partner_pk)
+                .signup(root_seed, partner_pk)
                 .await
                 .context("Failed to signup and provision")?;
             info!("Signup and initial provision complete");
