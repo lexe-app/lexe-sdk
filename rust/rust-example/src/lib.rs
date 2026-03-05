@@ -15,19 +15,17 @@ mod test {
             },
             bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
             command::{
-                ListPaymentsResponse, PaymentSyncSummary,
-                SdkCreateInvoiceRequest, SdkCreateInvoiceResponse,
-                SdkGetPaymentRequest, SdkGetPaymentResponse, SdkNodeInfo,
-                SdkPayInvoiceRequest, SdkPayInvoiceResponse, SdkPayment,
+                CreateInvoiceRequest, CreateInvoiceResponse, GetPaymentRequest,
+                GetPaymentResponse, ListPaymentsResponse, NodeInfo,
+                PayInvoiceRequest, PayInvoiceResponse, PaymentSyncSummary,
                 SdkUpdatePaymentNoteRequest,
             },
             payment::{
-                LxPaymentHash, LxPaymentId, LxPaymentSecret,
+                LxPaymentHash, LxPaymentId, LxPaymentSecret, Order, Payment,
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
                 PaymentKind, PaymentRail, PaymentStatus,
             },
             util::TimestampMs,
-            Order,
         },
         wallet::{LexeWallet, WithDb, WithoutDb},
     };
@@ -116,7 +114,7 @@ mod test {
 
             let resp: ListPaymentsResponse =
                 wallet.list_payments(&PaymentFilter::All, None, None, None);
-            let _: Vec<SdkPayment> = resp.payments;
+            let _: Vec<Payment> = resp.payments;
             let _: Option<PaymentCreatedIndex> = resp.next_index;
 
             // Test all filter variants
@@ -145,7 +143,7 @@ mod test {
 
             // wait_for_payment
             let index: PaymentCreatedIndex = todo!();
-            let _: SdkPayment =
+            let _: Payment =
                 wallet.wait_for_payment(index, None).await.unwrap();
         }
 
@@ -156,7 +154,7 @@ mod test {
 
         async fn test_wallet_generic_async<D>(wallet: &LexeWallet<D>) {
             // node_info
-            let info: SdkNodeInfo = wallet.node_info().await.unwrap();
+            let info: NodeInfo = wallet.node_info().await.unwrap();
             let _: Measurement = info.measurement;
             let _: UserPk = info.user_pk;
             let _: NodePk = info.node_pk;
@@ -164,13 +162,13 @@ mod test {
             let _: Amount = info.lightning_balance;
 
             // create_invoice
-            let req = SdkCreateInvoiceRequest {
+            let req = CreateInvoiceRequest {
                 expiration_secs: 3600,
                 amount: None,
                 description: None,
                 payer_note: None,
             };
-            let resp: SdkCreateInvoiceResponse =
+            let resp: CreateInvoiceResponse =
                 wallet.create_invoice(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
             let _: TimestampMs = resp.created_at;
@@ -180,23 +178,22 @@ mod test {
 
             // pay_invoice
             let invoice: LxInvoice = todo!();
-            let req = SdkPayInvoiceRequest {
+            let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
                 note: Some("Test payment".to_string()),
                 payer_note: None,
             };
-            let resp: SdkPayInvoiceResponse =
+            let resp: PayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
             let _: TimestampMs = resp.created_at;
 
             // get_payment
-            let req: SdkGetPaymentRequest =
-                SdkGetPaymentRequest { index: todo!() };
-            let resp: SdkGetPaymentResponse =
+            let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
+            let resp: GetPaymentResponse =
                 wallet.get_payment(req).await.unwrap();
-            let payment: SdkPayment = resp.payment.unwrap();
+            let payment: Payment = resp.payment.unwrap();
             let _: PaymentCreatedIndex = payment.index;
             let _: LxPaymentId = payment.index.id;
             let _: PaymentRail = payment.rail;

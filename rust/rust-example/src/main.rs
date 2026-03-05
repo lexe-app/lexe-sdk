@@ -17,7 +17,7 @@ use lexe::{
     tracing::info,
     types::{
         auth::{ClientCredentials, Credentials, RootSeed},
-        command::{SdkCreateInvoiceRequest, SdkGetPaymentRequest},
+        command::{CreateInvoiceRequest, GetPaymentRequest},
     },
     wallet::LexeWallet,
 };
@@ -134,7 +134,7 @@ async fn run() -> anyhow::Result<()> {
     );
 
     // Create an invoice
-    let create_invoice_req = SdkCreateInvoiceRequest {
+    let create_invoice_req = CreateInvoiceRequest {
         expiration_secs: 3600, // 1 hour
         amount: None,          // Amountless invoice
         description: Some("Test invoice from rust-example".to_string()),
@@ -147,7 +147,7 @@ async fn run() -> anyhow::Result<()> {
     info!(invoice = %invoice_resp.invoice, "Created invoice");
 
     // Get the payment we just created
-    let get_payment_req = SdkGetPaymentRequest {
+    let get_payment_req = GetPaymentRequest {
         index: invoice_resp.index,
     };
     let payment = wallet
