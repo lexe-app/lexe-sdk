@@ -4,7 +4,7 @@ The Lexe Python SDK provides a native Python interface for developers to control
 their self-custodial, always-online [Lexe](https://lexe.app) Lightning node.
 
 ```bash
-pip install lexe
+pip install lexe-sdk
 ```
 
 This repo contains public-facing docs and examples for the Lexe Python SDK.
@@ -61,7 +61,7 @@ this is a bit more involved. Please get in touch via the signup form.
 ### Install the SDK
 
 ```bash
-pip install lexe
+pip install lexe-sdk
 ```
 
 The package includes precompiled native bindings for Linux (x86_64, aarch64),

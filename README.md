@@ -9,7 +9,7 @@ receive payments 24/7.
 ### Python
 
 ```bash
-pip install lexe
+pip install lexe-sdk
 ```
 
 See the [Python SDK docs](python/) for the full quickstart.
