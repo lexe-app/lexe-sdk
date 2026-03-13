@@ -11,7 +11,7 @@ mod test {
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
-                NodePk, RootSeed, UserPk,
+                Mnemonic, NodePk, RootSeed, UserPk,
             },
             bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
             command::{
@@ -75,6 +75,14 @@ mod test {
         let _root_seed: Option<RootSeed> =
             RootSeed::read_from_path(&_seedphrase_path).unwrap();
         let _: () = root_seed.write_to_path(&_seedphrase_path).unwrap();
+        let mnemonic: Mnemonic = root_seed.to_mnemonic();
+        let _root_seed: RootSeed = RootSeed::from_mnemonic(mnemonic).unwrap();
+        let _: &[u8] = root_seed.as_bytes();
+        let _: UserPk = root_seed.derive_user_pk();
+        let _: NodePk = root_seed.derive_node_pk();
+        let encrypted: Vec<u8> = root_seed.password_encrypt("password").unwrap();
+        let _root_seed: RootSeed =
+            RootSeed::password_decrypt("password", encrypted).unwrap();
 
         // --- LexeWallet constructors ---
         // LexeWallet<WithDb>

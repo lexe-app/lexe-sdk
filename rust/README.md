@@ -81,7 +81,7 @@ use std::str::FromStr;
 use lexe::{
     config::WalletEnvConfig,
     types::{
-        auth::{Credentials, RootSeed},
+        auth::{CredentialsRef, RootSeed},
         bitcoin::LxInvoice,
         command::{SdkCreateInvoiceRequest, SdkPayInvoiceRequest},
     },
@@ -103,14 +103,11 @@ let root_seed = match env_config.read_seed()? {
         RootSeed::generate()
     }
 };
-let credentials = Credentials::RootSeed(root_seed.clone());
+let credentials = CredentialsRef::from(&root_seed);
 
 // Load or create wallet (data stored in ~/.lexe)
-let wallet = LexeWallet::load_or_fresh(
-    env_config.clone(),
-    credentials.as_ref(),
-    None, // Uses ~/.lexe by default
-)?;
+let wallet =
+    LexeWallet::load_or_fresh(env_config.clone(), credentials, None)?;
 
 if is_new_seed {
     // Signup with Lexe and provision the node (idempotent)
@@ -119,7 +116,7 @@ if is_new_seed {
     env_config.write_seed(&root_seed)?;
 } else {
     // Ensure provisioned to latest trusted release
-    wallet.provision(credentials.as_ref()).await?;
+    wallet.provision(credentials).await?;
 }
 
 // Get node info

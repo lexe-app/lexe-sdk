@@ -45,7 +45,7 @@ async fn run() -> anyhow::Result<()> {
     let env_config = WalletEnvConfig::testnet3();
 
     // Various ways of loading or creating Lexe credentials:
-    // 1. LEXE_CLIENT_CREDENTIALS env var (base64 JSON blob)
+    // 1. LEXE_CLIENT_CREDENTIALS env var (serialized credentials string)
     // 2. LEXE_ROOT_SEED env var (hex string)
     // 3. Read seedphrase file from ~/.lexe
     // 4. Generate fresh RootSeed and write to ~/.lexe
@@ -54,7 +54,7 @@ async fn run() -> anyhow::Result<()> {
     let is_new_seed;
     let credentials = if let Ok(creds_str) = env::var("LEXE_CLIENT_CREDENTIALS")
     {
-        let creds = ClientCredentials::try_from_base64_blob(&creds_str)
+        let creds = ClientCredentials::from_string(&creds_str)
             .context("Failed to parse LEXE_CLIENT_CREDENTIALS")?;
         info!("Using LEXE_CLIENT_CREDENTIALS");
         is_new_seed = false;
@@ -65,10 +65,10 @@ async fn run() -> anyhow::Result<()> {
         info!("Using LEXE_ROOT_SEED");
         is_new_seed = false;
         Credentials::RootSeed(root_seed)
-    } else if let Some(root_seed) = env_config.read_seed()? {
+    } else if let Some(existing_root_seed) = env_config.read_seed()? {
         info!("Loaded seedphrase from {}", seedphrase_path.display());
         is_new_seed = false;
-        Credentials::RootSeed(root_seed)
+        Credentials::RootSeed(existing_root_seed)
     } else {
         info!("No credentials found, generating fresh RootSeed");
         is_new_seed = true;
@@ -77,12 +77,13 @@ async fn run() -> anyhow::Result<()> {
 
     // Load or create wallet (data stored in ~/.lexe)
     let lexe_data_dir = None; // Use ~/.lexe by default, set to override
-    let wallet = LexeWallet::load_or_fresh(
-        env_config.clone(),
-        credentials.as_ref(),
-        lexe_data_dir,
-    )
-    .context("Failed to load wallet")?;
+    let wallet =
+        LexeWallet::load_or_fresh(
+            env_config.clone(),
+            credentials.as_ref(),
+            lexe_data_dir,
+        )
+        .context("Failed to load wallet")?;
 
     if let Credentials::RootSeed(ref root_seed) = credentials {
         if is_new_seed {
