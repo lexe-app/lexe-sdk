@@ -73,21 +73,21 @@ Wallet developers can programmatically create Lexe nodes for their users. Each
 user gets a self-custodial Lightning node running in a secure enclave.
 
 ```python
-import lexe
+from lexe import LexeWallet, RootSeed, SeedFileError, WalletEnvConfig
 
 # Create a wallet config for mainnet (or testnet3() for testing)
-config = lexe.WalletEnvConfig.mainnet()
+config = WalletEnvConfig.mainnet()
 
 # Try to load an existing seed from ~/.lexe, or create a fresh one
 try:
-    seed = config.read_seed()
+    seed = RootSeed.read(config)
     is_new_seed = False
-except lexe.SeedFileError.NotFound:
-    seed = lexe.RootSeed.generate()
+except SeedFileError.NotFound:
+    seed = RootSeed.generate()
     is_new_seed = True
 
 # Load or create wallet (data stored in ~/.lexe by default)
-wallet = lexe.LexeWallet.load_or_fresh(config, seed)
+wallet = LexeWallet.load_or_fresh(config, seed)
 
 if is_new_seed:
     # Sign up the user and provision their node.
@@ -99,7 +99,7 @@ if is_new_seed:
 
     # Persist the seed so we can load it on subsequent runs.
     # Stored at ~/.lexe/seedphrase.txt (mainnet).
-    config.write_seed(seed)
+    seed.write(config)
 else:
     # Ensure the node is running the latest enclave version
     wallet.provision(seed)
@@ -115,11 +115,11 @@ print(f"Balance: {info.balance_sats} sats")
 Once a node is provisioned, you can create invoices, send payments, and more:
 
 ```python
-import lexe
+from lexe import LexeWallet, PaymentFilter, RootSeed, WalletEnvConfig
 
-config = lexe.WalletEnvConfig.mainnet()
-seed = config.read_seed()
-wallet = lexe.LexeWallet.load_or_fresh(config, seed)
+config = WalletEnvConfig.mainnet()
+seed = RootSeed.read(config)
+wallet = LexeWallet.load_or_fresh(config, seed)
 wallet.provision(seed)
 
 # Get node info
@@ -143,7 +143,7 @@ payment = wallet.pay_invoice(
 
 # Sync and list payments
 wallet.sync_payments()
-payments = wallet.list_payments(filter=lexe.PaymentFilter.ALL)
+payments = wallet.list_payments(filter=PaymentFilter.ALL)
 for p in payments.payments:
     print(f"  {p.status}: {p.amount_sats} sats")
 ```

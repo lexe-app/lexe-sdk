@@ -93,7 +93,7 @@ let env_config = WalletEnvConfig::mainnet();
 
 // Load root seed from ~/.lexe, or create a fresh one
 let is_new_seed;
-let root_seed = match env_config.read_seed()? {
+let root_seed = match RootSeed::read(&env_config.wallet_env)? {
     Some(seed) => {
         is_new_seed = false;
         seed
@@ -113,7 +113,7 @@ if is_new_seed {
     // Signup with Lexe and provision the node (idempotent)
     let partner_pk = None;
     wallet.signup(&root_seed, partner_pk).await?;
-    env_config.write_seed(&root_seed)?;
+    root_seed.write(&env_config.wallet_env)?;
 } else {
     // Ensure provisioned to latest trusted release
     wallet.provision(credentials).await?;

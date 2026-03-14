@@ -65,7 +65,9 @@ async fn run() -> anyhow::Result<()> {
         info!("Using LEXE_ROOT_SEED");
         is_new_seed = false;
         Credentials::RootSeed(root_seed)
-    } else if let Some(existing_root_seed) = env_config.read_seed()? {
+    } else if let Some(existing_root_seed) =
+        RootSeed::read(&env_config.wallet_env)?
+    {
         info!("Loaded seedphrase from {}", seedphrase_path.display());
         is_new_seed = false;
         Credentials::RootSeed(existing_root_seed)
@@ -98,7 +100,7 @@ async fn run() -> anyhow::Result<()> {
             info!("Signup and initial provision complete");
 
             // Persist the seed. The next time we run, we'll read the existing seed.
-            env_config.write_seed(root_seed)?;
+            root_seed.write(&env_config.wallet_env)?;
             info!("Wrote seedphrase to {}", seedphrase_path.display());
         } else {
             // Ensure we're provisioned to all recent trusted releases.

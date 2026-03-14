@@ -61,17 +61,15 @@ mod test {
         // --- Seed file I/O ---
         let data_dir: PathBuf = lexe::default_lexe_data_dir().unwrap();
         let env_config: WalletEnvConfig = WalletEnvConfig::mainnet();
-        // WalletEnvConfig methods
+        // Seedphrase path
         let _seedphrase_path: PathBuf = env_config.seedphrase_path(&data_dir);
-        let _root_seed: Option<RootSeed> = env_config.read_seed().unwrap();
-        let _: () = env_config.write_seed(root_seed).unwrap();
-        // WalletEnv methods
         let _seedphrase_path: PathBuf =
             env_config.wallet_env.seedphrase_path(&data_dir);
+        // RootSeed convenience I/O (resolves default ~/.lexe path)
         let _root_seed: Option<RootSeed> =
-            env_config.wallet_env.read_seed().unwrap();
-        let _: () = env_config.wallet_env.write_seed(root_seed).unwrap();
-        // RootSeed path-based methods
+            RootSeed::read(&env_config.wallet_env).unwrap();
+        let _: () = root_seed.write(&env_config.wallet_env).unwrap();
+        // RootSeed path-based I/O
         let _root_seed: Option<RootSeed> =
             RootSeed::read_from_path(&_seedphrase_path).unwrap();
         let _: () = root_seed.write_to_path(&_seedphrase_path).unwrap();
