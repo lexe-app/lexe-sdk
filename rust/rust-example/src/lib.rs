@@ -76,6 +76,11 @@ mod test {
         let mnemonic: Mnemonic = root_seed.to_mnemonic();
         let _root_seed: RootSeed = RootSeed::from_mnemonic(mnemonic).unwrap();
         let _: &[u8] = root_seed.as_bytes();
+        let _: String = root_seed.to_hex();
+        let _root_seed: RootSeed =
+            RootSeed::from_bytes(root_seed.as_bytes()).unwrap();
+        let _root_seed: RootSeed =
+            RootSeed::from_hex(&root_seed.to_hex()).unwrap();
         let _: UserPk = root_seed.derive_user_pk();
         let _: NodePk = root_seed.derive_node_pk();
         let encrypted: Vec<u8> = root_seed.password_encrypt("password").unwrap();
