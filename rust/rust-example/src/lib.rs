@@ -26,7 +26,7 @@ mod test {
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
                 PaymentKind, PaymentRail, PaymentStatus,
             },
-            util::{ByteArray, TimestampMs},
+            util::TimestampMs,
         },
         wallet::{LexeWallet, WithDb, WithoutDb},
     };
@@ -84,7 +84,10 @@ mod test {
             RootSeed::from_hex(&root_seed.to_hex()).unwrap();
         let user_pk: UserPk = root_seed.derive_user_pk();
         let _: [u8; 32] = user_pk.to_array();
-        let _: NodePk = root_seed.derive_node_pk();
+        let _: &[u8] = user_pk.as_slice();
+        let _: String = user_pk.to_hex();
+        let node_pk: NodePk = root_seed.derive_node_pk();
+        let _: String = node_pk.to_hex();
         let encrypted: Vec<u8> = root_seed.password_encrypt("password").unwrap();
         let _root_seed: RootSeed =
             RootSeed::password_decrypt("password", encrypted).unwrap();
