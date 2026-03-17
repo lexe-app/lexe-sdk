@@ -169,6 +169,7 @@ mod test {
             // node_info
             let info: NodeInfo = wallet.node_info().await.unwrap();
             let _: Measurement = info.measurement;
+            let _: String = info.measurement.to_hex();
             let _: UserPk = info.user_pk;
             let _: NodePk = info.node_pk;
             let _: Amount = info.balance;
