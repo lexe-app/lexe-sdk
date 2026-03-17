@@ -7,11 +7,12 @@ mod test {
     use std::path::PathBuf;
 
     use lexe::{
+        bip39::Mnemonic,
         config::{WalletEnvConfig, WalletUserConfig},
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
-                Mnemonic, NodePk, RootSeed, UserPk,
+                NodePk, RootSeed, UserPk,
             },
             bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
             command::{
