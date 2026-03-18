@@ -14,7 +14,7 @@ mod test {
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
                 NodePk, RootSeed, UserPk,
             },
-            bitcoin::{Amount, ConfirmationPriority, LxInvoice, LxTxid},
+            bitcoin::{Amount, ConfirmationPriority, Invoice, Txid},
             command::{
                 CreateInvoiceRequest, CreateInvoiceResponse, GetPaymentRequest,
                 GetPaymentResponse, ListPaymentsResponse, NodeInfo,
@@ -22,7 +22,7 @@ mod test {
                 UpdatePaymentNoteRequest,
             },
             payment::{
-                LxPaymentHash, LxPaymentId, LxPaymentSecret, Order, Payment,
+                PaymentHash, PaymentId, PaymentSecret, Order, Payment,
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
                 PaymentKind, PaymentRail, PaymentStatus,
             },
@@ -191,11 +191,11 @@ mod test {
             let _: PaymentCreatedIndex = resp.index;
             let _: TimestampMs = resp.created_at;
             let _: TimestampMs = resp.expires_at;
-            let _: LxPaymentHash = resp.payment_hash;
-            let _: LxPaymentSecret = resp.payment_secret;
+            let _: PaymentHash = resp.payment_hash;
+            let _: PaymentSecret = resp.payment_secret;
 
             // pay_invoice
-            let invoice: LxInvoice = todo!();
+            let invoice: Invoice = todo!();
             let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
@@ -213,7 +213,7 @@ mod test {
                 wallet.get_payment(req).await.unwrap();
             let payment: Payment = resp.payment.unwrap();
             let _: PaymentCreatedIndex = payment.index;
-            let _: LxPaymentId = payment.index.id;
+            let _: PaymentId = payment.index.id;
             let _: PaymentRail = payment.rail;
             let _: PaymentKind = payment.kind;
             let _: PaymentDirection = payment.direction;
@@ -221,7 +221,7 @@ mod test {
             let _: Amount = payment.fees;
             let _: TimestampMs = payment.created_at;
             let _: TimestampMs = payment.updated_at;
-            let _: Option<LxTxid> = payment.txid;
+            let _: Option<Txid> = payment.txid;
             let _: Option<ConfirmationPriority> = payment.priority;
 
             // update_payment_note
