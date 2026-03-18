@@ -22,10 +22,10 @@ mod test {
                 UpdatePaymentNoteRequest,
             },
             payment::{
-                ClientPaymentId, LnClaimId, PaymentHash, PaymentId,
-                PaymentSecret, Order, Payment, PaymentCreatedIndex,
-                PaymentDirection, PaymentFilter, PaymentKind, PaymentRail,
-                PaymentStatus,
+                ClientPaymentId, LnClaimId, Order, Payment,
+                PaymentCreatedIndex, PaymentDirection, PaymentFilter,
+                PaymentHash, PaymentId, PaymentKind, PaymentRail,
+                PaymentSecret, PaymentStatus,
             },
             util::TimestampMs,
         },
@@ -90,7 +90,8 @@ mod test {
         let _: String = user_pk.to_hex();
         let node_pk: NodePk = root_seed.derive_node_pk();
         let _: String = node_pk.to_hex();
-        let encrypted: Vec<u8> = root_seed.password_encrypt("password").unwrap();
+        let encrypted: Vec<u8> =
+            root_seed.password_encrypt("password").unwrap();
         let _root_seed: RootSeed =
             RootSeed::password_decrypt("password", encrypted).unwrap();
 

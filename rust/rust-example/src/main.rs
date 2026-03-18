@@ -79,13 +79,12 @@ async fn run() -> anyhow::Result<()> {
 
     // Load or create wallet (data stored in ~/.lexe)
     let lexe_data_dir = None; // Use ~/.lexe by default, set to override
-    let wallet =
-        LexeWallet::load_or_fresh(
-            env_config.clone(),
-            credentials.as_ref(),
-            lexe_data_dir,
-        )
-        .context("Failed to load wallet")?;
+    let wallet = LexeWallet::load_or_fresh(
+        env_config.clone(),
+        credentials.as_ref(),
+        lexe_data_dir,
+    )
+    .context("Failed to load wallet")?;
 
     if let Credentials::RootSeed(ref root_seed) = credentials {
         if is_new_seed {
