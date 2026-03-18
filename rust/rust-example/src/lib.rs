@@ -22,9 +22,10 @@ mod test {
                 UpdatePaymentNoteRequest,
             },
             payment::{
-                PaymentHash, PaymentId, PaymentSecret, Order, Payment,
-                PaymentCreatedIndex, PaymentDirection, PaymentFilter,
-                PaymentKind, PaymentRail, PaymentStatus,
+                ClientPaymentId, LnClaimId, PaymentHash, PaymentId,
+                PaymentSecret, Order, Payment, PaymentCreatedIndex,
+                PaymentDirection, PaymentFilter, PaymentKind, PaymentRail,
+                PaymentStatus,
             },
             util::TimestampMs,
         },
@@ -214,6 +215,9 @@ mod test {
             let payment: Payment = resp.payment.unwrap();
             let _: PaymentCreatedIndex = payment.index;
             let _: PaymentId = payment.index.id;
+            // PaymentId variant payload types
+            let _: ClientPaymentId = todo!();
+            let _: LnClaimId = todo!();
             let _: PaymentRail = payment.rail;
             let _: PaymentKind = payment.kind;
             let _: PaymentDirection = payment.direction;
