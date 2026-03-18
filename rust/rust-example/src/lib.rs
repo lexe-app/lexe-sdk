@@ -28,6 +28,7 @@ mod test {
             },
             util::TimestampMs,
         },
+        util::ByteArray,
         wallet::{LexeWallet, WithDb, WithoutDb},
     };
 
