@@ -82,8 +82,8 @@ use lexe::{
     config::WalletEnvConfig,
     types::{
         auth::{CredentialsRef, RootSeed},
-        bitcoin::LxInvoice,
-        command::{SdkCreateInvoiceRequest, SdkPayInvoiceRequest},
+        bitcoin::Invoice,
+        command::{CreateInvoiceRequest, PayInvoiceRequest},
     },
     wallet::LexeWallet,
 };
@@ -124,7 +124,7 @@ let node_info = wallet.node_info().await?;
 println!("Balance: {} sats", node_info.balance);
 
 // Create a Lightning invoice
-let invoice_req = SdkCreateInvoiceRequest {
+let invoice_req = CreateInvoiceRequest {
     expiration_secs: 3600,
     amount: None,
     description: Some("VPN subscription (1 month)".to_string()),
@@ -133,8 +133,8 @@ let invoice_req = SdkCreateInvoiceRequest {
 let invoice_resp = wallet.create_invoice(invoice_req).await?;
 
 // Pay an invoice
-let invoice = LxInvoice::from_str("lnbc1pjlue...")?;
-let pay_req = SdkPayInvoiceRequest {
+let invoice = Invoice::from_str("lnbc1pjlue...")?;
+let pay_req = PayInvoiceRequest {
     invoice,
     fallback_amount: None,
     note: Some("Mass-produced mass-market Miller Lite".to_string()),

@@ -137,7 +137,7 @@ invoice = wallet.create_invoice(
 print(f"Invoice: {invoice.invoice}")
 
 # Pay a Lightning invoice
-payment = wallet.pay_invoice(
+payment_resp = wallet.pay_invoice(
     invoice="lnbc...",
     fallback_amount_sats=None,
     note="Paying for coffee",
