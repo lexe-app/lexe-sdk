@@ -30,7 +30,7 @@ mod test {
             util::TimestampMs,
         },
         util::ByteArray,
-        wallet::{LexeWallet, WithDb, WithoutDb},
+        wallet::LexeWallet,
     };
 
     /// Test that the SDK reexports all types required to call all functions
@@ -96,43 +96,40 @@ mod test {
             RootSeed::password_decrypt("password", encrypted).unwrap();
 
         // --- LexeWallet constructors ---
-        // LexeWallet<WithDb>
-        let wallet_with_db: LexeWallet<WithDb> = LexeWallet::fresh(
+        let wallet: LexeWallet = LexeWallet::fresh(
             env_config.clone(),
             credentials_ref,
             Some(data_dir.clone()),
         )
         .unwrap();
-        let wallet_with_db: Option<LexeWallet<WithDb>> = LexeWallet::load(
+        let _wallet: Option<LexeWallet> = LexeWallet::load(
             env_config.clone(),
             credentials_ref,
             Some(data_dir.clone()),
         )
         .unwrap();
-        let wallet_with_db: LexeWallet<WithDb> = LexeWallet::load_or_fresh(
+        let wallet: LexeWallet = LexeWallet::load_or_fresh(
             env_config.clone(),
             credentials_ref,
             Some(data_dir),
         )
         .unwrap();
 
-        // LexeWallet<WithoutDb>
-        let _wallet_without_db: LexeWallet<WithoutDb> =
+        let _wallet_without_db: LexeWallet =
             LexeWallet::without_db(env_config.clone(), credentials_ref)
                 .unwrap();
 
-        // --- LexeWallet<WithDb> methods ---
+        // --- LexeWallet DB methods ---
 
-        async fn test_wallet_with_db_async(
-            wallet: &LexeWallet<lexe::wallet::WithDb>,
-        ) {
+        async fn test_wallet_db_async(wallet: &LexeWallet) {
             let summary: PaymentSyncSummary =
                 wallet.sync_payments().await.unwrap();
             let _: usize = summary.num_new;
             let _: usize = summary.num_updated;
 
-            let resp: ListPaymentsResponse =
-                wallet.list_payments(&PaymentFilter::All, None, None, None);
+            let resp: ListPaymentsResponse = wallet
+                .list_payments(&PaymentFilter::All, None, None, None)
+                .unwrap();
             let _: Vec<Payment> = resp.payments;
             let _: Option<PaymentCreatedIndex> = resp.next_index;
 
@@ -166,12 +163,12 @@ mod test {
                 wallet.wait_for_payment(index, None).await.unwrap();
         }
 
-        // --- LexeWallet<D> generic methods ---
-        let user_config: &WalletUserConfig = wallet_with_db.user_config();
+        // --- LexeWallet shared methods ---
+        let user_config: &WalletUserConfig = wallet.user_config();
         let _: UserPk = user_config.user_pk;
         let _: WalletEnvConfig = user_config.env_config.clone();
 
-        async fn test_wallet_generic_async<D>(wallet: &LexeWallet<D>) {
+        async fn test_wallet_async(wallet: &LexeWallet) {
             // node_info
             let info: NodeInfo = wallet.node_info().await.unwrap();
             let _: Measurement = info.measurement;
@@ -234,12 +231,12 @@ mod test {
             wallet.update_payment_note(req).await.unwrap();
         }
 
-        async fn test_signup<D>(wallet: &LexeWallet<D>, root_seed: &RootSeed) {
+        async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
             let partner_pk: Option<UserPk> = None;
             wallet.signup(root_seed, partner_pk).await.unwrap();
         }
 
-        async fn test_provision<D>(wallet: &LexeWallet<D>) {
+        async fn test_provision(wallet: &LexeWallet) {
             let credentials_ref: CredentialsRef<'_> = todo!();
             wallet.provision(credentials_ref).await.unwrap();
         }
