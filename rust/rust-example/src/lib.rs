@@ -8,7 +8,10 @@ mod test {
 
     use lexe::{
         bip39::Mnemonic,
-        config::{WalletEnvConfig, WalletUserConfig},
+        config::{
+            DeployEnv, Network, WalletEnv, WalletEnvConfig, WalletEnvDbConfig,
+            WalletUserConfig, WalletUserDbConfig,
+        },
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
@@ -50,6 +53,12 @@ mod test {
         )]
 
         // --- Config types ---
+        let wallet_env: WalletEnv = WalletEnv::mainnet();
+        let _: WalletEnv = WalletEnv::testnet3();
+        let _: WalletEnv = WalletEnv::regtest(false);
+        let _: DeployEnv = wallet_env.deploy_env;
+        let _: Network = wallet_env.network;
+        let _: bool = wallet_env.use_sgx;
         let _env_config: WalletEnvConfig = WalletEnvConfig::mainnet();
         let _env_config: WalletEnvConfig = WalletEnvConfig::testnet3();
 
@@ -94,6 +103,25 @@ mod test {
             root_seed.password_encrypt("password").unwrap();
         let _root_seed: RootSeed =
             RootSeed::password_decrypt("password", encrypted).unwrap();
+
+        // --- DB config types ---
+        let env_db_config: WalletEnvDbConfig =
+            WalletEnvDbConfig::new(wallet_env, data_dir.clone());
+        let _: &PathBuf = env_db_config.lexe_data_dir();
+        let _: &PathBuf = env_db_config.env_db_dir();
+        let user_db_config: WalletUserDbConfig =
+            WalletUserDbConfig::new(env_db_config.clone(), user_pk);
+        let _user_db_config: WalletUserDbConfig =
+            WalletUserDbConfig::from_credentials(
+                credentials_ref,
+                env_db_config,
+            )
+            .unwrap();
+        let _: &WalletEnvDbConfig = user_db_config.env_db_config();
+        let _: UserPk = user_db_config.user_pk();
+        let _: &PathBuf = user_db_config.lexe_data_dir();
+        let _: &PathBuf = user_db_config.env_db_dir();
+        let _: &PathBuf = user_db_config.user_db_dir();
 
         // --- LexeWallet constructors ---
         let wallet: LexeWallet = LexeWallet::fresh(
