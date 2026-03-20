@@ -11,7 +11,7 @@ publish = false
 [dependencies]
 
 lexe = { git = "https://github.com/lexe-app/lexe-public" }
-# lexe = { path = "../../public/lexe" }
+# lexe = { version = "0.1" }
 
 dotenvy = "0.15"
 tokio = { version = "1", features = ["rt", "macros"] }
