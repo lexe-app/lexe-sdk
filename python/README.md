@@ -73,10 +73,10 @@ Wallet developers can programmatically create Lexe nodes for their users. Each
 user gets a self-custodial Lightning node running in a secure enclave.
 
 ```python
-from lexe import Credentials, LexeWallet, RootSeed, SeedFileError, WalletEnvConfig
+from lexe import Credentials, LexeWallet, RootSeed, SeedFileError, WalletConfig
 
 # Create a wallet config for mainnet (or testnet3() for testing)
-config = WalletEnvConfig.mainnet()
+config = WalletConfig.mainnet()
 
 # Try to load an existing seed from ~/.lexe, or create a fresh one
 try:
@@ -116,9 +116,9 @@ print(f"Balance: {info.balance_sats} sats")
 Once a node is provisioned, you can create invoices, send payments, and more:
 
 ```python
-from lexe import Credentials, LexeWallet, PaymentFilter, RootSeed, WalletEnvConfig
+from lexe import Credentials, LexeWallet, PaymentFilter, RootSeed, WalletConfig
 
-config = WalletEnvConfig.mainnet()
+config = WalletConfig.mainnet()
 seed = RootSeed.read(config)
 creds = Credentials.from_root_seed(seed)
 wallet = LexeWallet.load_or_fresh(config, creds)
