@@ -124,7 +124,7 @@ println!("Balance: {} sats", node_info.balance);
 
 // Create a Lightning invoice
 let invoice_req = CreateInvoiceRequest {
-    expiration_secs: 3600,
+    expiration_secs: Some(3600),
     amount: None,
     description: Some("VPN subscription (1 month)".to_string()),
     payer_note: None,

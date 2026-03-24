@@ -208,7 +208,7 @@ mod test {
 
             // create_invoice
             let req = CreateInvoiceRequest {
-                expiration_secs: 3600,
+                expiration_secs: Some(3600),
                 amount: None,
                 description: None,
                 payer_note: None,
