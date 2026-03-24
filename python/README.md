@@ -131,12 +131,12 @@ info = wallet.node_info()
 print(f"Balance: {info.balance_sats} sats")
 
 # Create a Lightning invoice
-invoice = wallet.create_invoice(
+resp = wallet.create_invoice(
     expiration_secs=3600,
     amount_sats=None,
     description="Payment for coffee",
 )
-print(f"Invoice: {invoice.invoice}")
+print(f"Invoice: {resp.invoice}")
 
 # Pay a Lightning invoice
 payment_resp = wallet.pay_invoice(
