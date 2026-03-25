@@ -26,5 +26,5 @@ See the [Rust SDK docs](rust/) for the full quickstart.
 ## Source Code
 
 The SDK source code can be found in the Lexe monorepo:
-- Rust SDK: <https://github.com/lexe-app/lexe-public/tree/master/sdk-rust>
-- Python SDK: <https://github.com/lexe-app/lexe-public/tree/master/sdk>
+- Rust SDK: <https://github.com/lexe-app/lexe-public/tree/master/lexe>
+- Python SDK: <https://github.com/lexe-app/lexe-public/tree/master/sdk-uniffi>
