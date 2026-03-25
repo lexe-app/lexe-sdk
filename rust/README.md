@@ -73,7 +73,7 @@ Add `lexe` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexe = { git = "https://github.com/lexe-app/lexe-public" }
+lexe = "0.1"
 ```
 
 Basic usage:

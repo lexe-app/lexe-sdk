@@ -9,9 +9,7 @@ publish = false
 [workspace]
 
 [dependencies]
-
-lexe = { git = "https://github.com/lexe-app/lexe-public" }
-# lexe = { version = "0.1" }
+lexe = "0.1"
 
 dotenvy = "0.15"
 tokio = { version = "1", features = ["rt", "macros"] }

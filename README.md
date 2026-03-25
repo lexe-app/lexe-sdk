@@ -18,7 +18,7 @@ See the [Python SDK docs](python/) for the full quickstart.
 
 ```toml
 [dependencies]
-lexe = { git = "https://github.com/lexe-app/lexe-public" }
+lexe = "0.1"
 ```
 
 See the [Rust SDK docs](rust/) for the full quickstart.
