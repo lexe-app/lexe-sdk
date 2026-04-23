@@ -17,12 +17,13 @@ mod test {
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
                 NodePk, RootSeed, UserPk,
             },
-            bitcoin::{Amount, ConfirmationPriority, Invoice, Txid},
+            bitcoin::{Amount, ConfirmationPriority, Invoice, Offer, Txid},
             command::{
-                CreateInvoiceRequest, CreateInvoiceResponse, GetPaymentRequest,
+                CreateInvoiceRequest, CreateInvoiceResponse,
+                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
                 GetPaymentResponse, ListPaymentsResponse, NodeInfo,
-                PayInvoiceRequest, PayInvoiceResponse, PaymentSyncSummary,
-                UpdatePaymentNoteRequest,
+                PayInvoiceRequest, PayInvoiceResponse, PayOfferRequest,
+                PayOfferResponse, PaymentSyncSummary, UpdatePaymentNoteRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
@@ -229,6 +230,28 @@ mod test {
             };
             let resp: PayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();
+            let _: PaymentCreatedIndex = resp.index;
+            let _: TimestampMs = resp.created_at;
+
+            // create_offer
+            let req = CreateOfferRequest {
+                description: Some("Donations".to_string()),
+                min_amount: None,
+                expiration_secs: None,
+            };
+            let resp: CreateOfferResponse =
+                wallet.create_offer(req).await.unwrap();
+            let _: Offer = resp.offer;
+
+            // pay_offer
+            let offer: Offer = todo!();
+            let req = PayOfferRequest {
+                offer,
+                amount: Amount::from_sats_u32(1000),
+                note: None,
+                payer_note: None,
+            };
+            let resp: PayOfferResponse = wallet.pay_offer(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
             let _: TimestampMs = resp.created_at;
 
