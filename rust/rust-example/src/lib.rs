@@ -211,7 +211,6 @@ mod test {
                 expiration_secs: Some(3600),
                 amount: None,
                 description: None,
-                payer_note: None,
             };
             let resp: CreateInvoiceResponse =
                 wallet.create_invoice(req).await.unwrap();
@@ -227,7 +226,6 @@ mod test {
                 invoice,
                 fallback_amount: None,
                 note: Some("Test payment".to_string()),
-                payer_note: None,
             };
             let resp: PayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();
