@@ -17,13 +17,18 @@ mod test {
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
                 NodePk, RootSeed, UserPk,
             },
-            bitcoin::{Amount, ConfirmationPriority, Invoice, Offer, Txid},
+            bitcoin::{
+                Amount, ConfirmationPriority, Invoice, LnurlPayRequest,
+                LnurlPayRequestMetadata, Offer, OfferWithAmount, Onchain,
+                PaymentMethod, Txid,
+            },
             command::{
-                CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
-                GetPaymentResponse, ListPaymentsResponse, NodeInfo,
-                PayInvoiceRequest, PayInvoiceResponse, PayOfferRequest,
-                PayOfferResponse, PaymentSyncSummary, UpdatePaymentNoteRequest,
+                AnalyzeRequest, AnalyzeResponse, CreateInvoiceRequest,
+                CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
+                GetPaymentRequest, GetPaymentResponse, ListPaymentsResponse,
+                NodeInfo, PayInvoiceRequest, PayInvoiceResponse,
+                PayOfferRequest, PayOfferResponse, PayRequest, PayResponse,
+                PayableDetails, PaymentSyncSummary, UpdatePaymentNoteRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
@@ -206,6 +211,43 @@ mod test {
             let _: NodePk = info.node_pk;
             let _: Amount = info.balance;
             let _: Amount = info.lightning_balance;
+
+            // analyze
+            let req = AnalyzeRequest {
+                payable: "lnondeezn".to_owned(),
+            };
+            let resp: AnalyzeResponse = wallet.analyze(req).await.unwrap();
+            let payables: Vec<PayableDetails> = resp.payables;
+            let details: PayableDetails = payables.into_iter().next().unwrap();
+            let _: String = details.payable;
+            let _: Amount = details.amount.unwrap();
+            let _: TimestampMs = details.expires_at.unwrap();
+            let payment_method: PaymentMethod = details.method;
+            match payment_method {
+                PaymentMethod::Onchain(onchain) => {
+                    let _: Onchain = onchain;
+                }
+                PaymentMethod::Invoice(invoice) => {
+                    let _: Invoice = invoice;
+                }
+                PaymentMethod::Offer(offer_with_amount) => {
+                    let _: OfferWithAmount = offer_with_amount;
+                    let _: Offer = offer_with_amount.offer;
+                }
+                PaymentMethod::LnurlPayRequest(pay_request) => {
+                    let _: LnurlPayRequest = pay_request;
+                    let _: LnurlPayRequestMetadata = pay_request.metadata;
+                }
+            };
+
+            // pay
+            let req = PayRequest {
+                payable: "lnondeenz".to_string(),
+                amount: None,
+            };
+            let resp: PayResponse = wallet.pay(req).await.unwrap();
+            let _: PaymentCreatedIndex = resp.index;
+            let _: TimestampMs = resp.created_at;
 
             // create_invoice
             let req = CreateInvoiceRequest {
