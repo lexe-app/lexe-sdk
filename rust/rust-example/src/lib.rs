@@ -36,7 +36,7 @@ mod test {
                 PaymentHash, PaymentId, PaymentKind, PaymentRail,
                 PaymentSecret, PaymentStatus,
             },
-            util::TimestampMs,
+            util::{Ppm, TimestampMs},
         },
         util::ByteArray,
         wallet::LexeWallet,
@@ -312,6 +312,9 @@ mod test {
             let _: PaymentDirection = payment.direction;
             let _: PaymentStatus = payment.status;
             let _: Amount = payment.fees;
+            let _: Option<UserPk> = payment.partner_pk;
+            let _: Option<Ppm> = payment.partner_prop_fee;
+            let _: Option<Amount> = payment.partner_base_fee;
             let _: TimestampMs = payment.created_at;
             let _: TimestampMs = payment.updated_at;
             let _: Option<Txid> = payment.txid;
