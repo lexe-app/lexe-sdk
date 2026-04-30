@@ -140,6 +140,9 @@ async fn run() -> anyhow::Result<()> {
         expiration_secs: Some(3600), // 1 hour
         amount: None,                // Amountless invoice
         description: Some("Test invoice from rust-example".to_string()),
+        partner_pk: None,
+        partner_prop_fee: None,
+        partner_base_fee: None,
     };
     let invoice_resp = wallet
         .create_invoice(create_invoice_req)

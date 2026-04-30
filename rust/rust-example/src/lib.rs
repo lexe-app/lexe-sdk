@@ -254,6 +254,9 @@ mod test {
                 expiration_secs: Some(3600),
                 amount: None,
                 description: None,
+                partner_pk: None,
+                partner_prop_fee: None,
+                partner_base_fee: None,
             };
             let resp: CreateInvoiceResponse =
                 wallet.create_invoice(req).await.unwrap();
