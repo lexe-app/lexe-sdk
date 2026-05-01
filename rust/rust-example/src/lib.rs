@@ -244,6 +244,8 @@ mod test {
             let req = PayRequest {
                 payable: "lnondeenz".to_string(),
                 amount: None,
+                note: None,
+                payer_note: None,
             };
             let resp: PayResponse = wallet.pay(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
