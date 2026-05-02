@@ -127,7 +127,7 @@ let invoice_req = CreateInvoiceRequest {
     expiration_secs: Some(3600),
     amount: None,
     description: Some("VPN subscription (1 month)".to_string()),
-    payer_note: None,
+    message: None,
 };
 let invoice_resp = wallet.create_invoice(invoice_req).await?;
 
@@ -136,8 +136,7 @@ let invoice = Invoice::from_str("lnbc1pjlue...")?;
 let pay_req = PayInvoiceRequest {
     invoice,
     fallback_amount: None,
-    note: Some("Mass-produced mass-market Miller Lite".to_string()),
-    payer_note: None,
+    personal_note: Some("Mass-produced mass-market Miller Lite".to_string()),
 };
 let pay_resp = wallet.pay_invoice(pay_req).await?;
 

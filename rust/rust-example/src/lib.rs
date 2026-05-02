@@ -28,7 +28,7 @@ mod test {
                 GetPaymentRequest, GetPaymentResponse, ListPaymentsResponse,
                 NodeInfo, PayInvoiceRequest, PayInvoiceResponse,
                 PayOfferRequest, PayOfferResponse, PayRequest, PayResponse,
-                PayableDetails, PaymentSyncSummary, UpdatePaymentNoteRequest,
+                PayableDetails, PaymentSyncSummary, UpdatePersonalNoteRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
@@ -244,8 +244,8 @@ mod test {
             let req = PayRequest {
                 payable: "lnondeenz".to_string(),
                 amount: None,
-                note: None,
-                payer_note: None,
+                message: None,
+                personal_note: None,
             };
             let resp: PayResponse = wallet.pay(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
@@ -273,7 +273,7 @@ mod test {
             let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
-                note: Some("Test payment".to_string()),
+                personal_note: Some("Test payment".to_string()),
             };
             let resp: PayInvoiceResponse =
                 wallet.pay_invoice(req).await.unwrap();
@@ -295,8 +295,8 @@ mod test {
             let req = PayOfferRequest {
                 offer,
                 amount: Amount::from_sats_u32(1000),
-                note: None,
-                payer_note: None,
+                message: None,
+                personal_note: None,
             };
             let resp: PayOfferResponse = wallet.pay_offer(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
@@ -325,9 +325,9 @@ mod test {
             let _: Option<Txid> = payment.txid;
             let _: Option<ConfirmationPriority> = payment.priority;
 
-            // update_payment_note
-            let req: UpdatePaymentNoteRequest = todo!();
-            wallet.update_payment_note(req).await.unwrap();
+            // update_personal_note
+            let req: UpdatePersonalNoteRequest = todo!();
+            wallet.update_personal_note(req).await.unwrap();
         }
 
         async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
