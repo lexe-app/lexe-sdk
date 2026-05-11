@@ -223,6 +223,7 @@ mod test {
             let _: Amount = details.amount.unwrap();
             let _: TimestampMs = details.expires_at.unwrap();
             let payment_method: PaymentMethod = details.method;
+            let _: &'static str = payment_method.kind();
             match payment_method {
                 PaymentMethod::Onchain(onchain) => {
                     let _: Onchain = onchain;
