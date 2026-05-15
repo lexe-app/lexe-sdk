@@ -25,16 +25,18 @@ mod test {
             command::{
                 AnalyzeRequest, AnalyzeResponse, CreateInvoiceRequest,
                 CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
-                GetPaymentRequest, GetPaymentResponse, ListPaymentsResponse,
-                NodeInfo, PayInvoiceRequest, PayInvoiceResponse,
-                PayOfferRequest, PayOfferResponse, PayRequest, PayResponse,
-                PayableDetails, PaymentSyncSummary, UpdatePersonalNoteRequest,
+                GetPaymentRequest, GetPaymentResponse,
+                GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
+                ListPaymentsResponse, NodeInfo, PayInvoiceRequest,
+                PayInvoiceResponse, PayOfferRequest, PayOfferResponse,
+                PayRequest, PayResponse, PayableDetails, PaymentSyncSummary,
+                UpdatePersonalNoteRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
                 PaymentHash, PaymentId, PaymentKind, PaymentRail,
-                PaymentSecret, PaymentStatus,
+                PaymentSecret, PaymentStatus, PaymentUpdatedIndex,
             },
             util::{Ppm, TimestampMs},
         },
@@ -325,6 +327,16 @@ mod test {
             let _: TimestampMs = payment.updated_at;
             let _: Option<Txid> = payment.txid;
             let _: Option<ConfirmationPriority> = payment.priority;
+
+            // get_updated_payments
+            let req: GetUpdatedPaymentsRequest = GetUpdatedPaymentsRequest {
+                start_index: None,
+                limit: None,
+            };
+            let resp: GetUpdatedPaymentsResponse =
+                wallet.get_updated_payments(req).await.unwrap();
+            let _: Vec<Payment> = resp.payments;
+            let _: Option<PaymentUpdatedIndex> = resp.updated_index;
 
             // update_personal_note
             let req: UpdatePersonalNoteRequest = todo!();
