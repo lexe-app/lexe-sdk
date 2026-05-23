@@ -8,6 +8,7 @@ mod test {
 
     use lexe::{
         bip39::Mnemonic,
+        bitcoin::address::Address,
         config::{
             DeployEnv, Network, WalletEnv, WalletEnvConfig, WalletEnvDbConfig,
             WalletUserConfig, WalletUserDbConfig,
@@ -19,8 +20,7 @@ mod test {
             },
             bitcoin::{
                 Amount, ConfirmationPriority, Invoice, LnurlPayRequest,
-                LnurlPayRequestMetadata, Offer, OfferWithAmount, Onchain,
-                PaymentMethod, Txid,
+                LnurlPayRequestMetadata, Offer, PaymentMethod, Txid,
             },
             command::{
                 AnalyzeRequest, AnalyzeResponse, CreateInvoiceRequest,
@@ -227,17 +227,31 @@ mod test {
             let payment_method: PaymentMethod = details.method;
             let _: &'static str = payment_method.kind();
             match payment_method {
-                PaymentMethod::Onchain(onchain) => {
-                    let _: Onchain = onchain;
+                PaymentMethod::Onchain {
+                    address,
+                    amount,
+                    label,
+                    message,
+                } => {
+                    let _: Address = address;
+                    let _: Option<Amount> = amount;
+                    let _: Option<String> = label;
+                    let _: Option<String> = message;
                 }
-                PaymentMethod::Invoice(invoice) => {
+                PaymentMethod::Invoice { invoice } => {
                     let _: Invoice = invoice;
                 }
-                PaymentMethod::Offer(offer_with_amount) => {
-                    let _: OfferWithAmount = offer_with_amount;
-                    let _: Offer = offer_with_amount.offer;
+                PaymentMethod::Offer {
+                    offer,
+                    bip321_amount,
+                } => {
+                    let _: Offer = offer;
+                    let _: Option<Amount> = bip321_amount;
                 }
-                PaymentMethod::LnurlPayRequest(pay_request) => {
+                PaymentMethod::LnurlPay {
+                    lnurl: _,
+                    pay_request,
+                } => {
                     let _: LnurlPayRequest = pay_request;
                     let _: LnurlPayRequestMetadata = pay_request.metadata;
                 }
