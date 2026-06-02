@@ -19,18 +19,21 @@ mod test {
                 NodePk, RootSeed, UserPk,
             },
             bitcoin::{
-                Amount, ConfirmationPriority, Invoice, LnurlPayRequest,
-                LnurlPayRequestMetadata, Offer, PaymentMethod, Txid,
+                Amount, ClaimMethod, ConfirmationPriority, Invoice,
+                LnurlPayRequest, LnurlPayRequestMetadata, LnurlWithdrawRequest,
+                Offer, PaymentMethod, Txid,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, CreateInvoiceRequest,
-                CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
-                GetPaymentRequest, GetPaymentResponse,
-                GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
-                ListPaymentsResponse, NodeInfo, PayInvoiceRequest,
-                PayInvoiceResponse, PayOfferRequest, PayOfferResponse,
+                AnalyzeRequest, AnalyzeResponse, ClaimableDetails,
+                CreateInvoiceRequest, CreateInvoiceResponse,
+                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
+                GetPaymentResponse, GetUpdatedPaymentsRequest,
+                GetUpdatedPaymentsResponse, ListPaymentsResponse, NodeInfo,
+                PayInvoiceRequest, PayInvoiceResponse, PayLnurlRequest,
+                PayLnurlResponse, PayOfferRequest, PayOfferResponse,
                 PayRequest, PayResponse, PayableDetails, PaymentSyncSummary,
-                UpdatePersonalNoteRequest,
+                UpdatePersonalNoteRequest, WithdrawLnurlRequest,
+                WithdrawLnurlResponse,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
@@ -216,9 +219,10 @@ mod test {
 
             // analyze
             let req = AnalyzeRequest {
-                payable: "lnondeezn".to_owned(),
+                payment_string: "lnondeezn".to_owned(),
             };
             let resp: AnalyzeResponse = wallet.analyze(req).await.unwrap();
+            // payables
             let payables: Vec<PayableDetails> = resp.payables;
             let details: PayableDetails = payables.into_iter().next().unwrap();
             let _: String = details.payable;
@@ -256,6 +260,19 @@ mod test {
                     let _: LnurlPayRequestMetadata = pay_request.metadata;
                 }
             };
+            // claimables
+            let claimables: Vec<ClaimableDetails> = resp.claimables;
+            let details: ClaimableDetails =
+                claimables.into_iter().next().unwrap();
+            let claim_method: ClaimMethod = details.method;
+            match claim_method {
+                ClaimMethod::LnurlWithdraw {
+                    lnurl: _,
+                    withdraw_request,
+                } => {
+                    let _: LnurlWithdrawRequest = withdraw_request;
+                }
+            }
 
             // pay
             let req = PayRequest {
@@ -316,6 +333,30 @@ mod test {
                 personal_note: None,
             };
             let resp: PayOfferResponse = wallet.pay_offer(req).await.unwrap();
+            let _: PaymentCreatedIndex = resp.index;
+            let _: TimestampMs = resp.created_at;
+
+            // pay_lnurl
+            let req = PayLnurlRequest {
+                lnurl: None,
+                pay_request: None,
+                amount: Amount::from_sats_u32(1000),
+                message: None,
+                personal_note: None,
+            };
+            let resp: PayLnurlResponse = wallet.pay_lnurl(req).await.unwrap();
+            let _: PaymentCreatedIndex = resp.index;
+            let _: TimestampMs = resp.created_at;
+
+            // withdraw_lnurl
+            let req = WithdrawLnurlRequest {
+                lnurl: None,
+                withdraw_request: None,
+                amount: None,
+                description: None,
+            };
+            let resp: WithdrawLnurlResponse =
+                wallet.withdraw_lnurl(req).await.unwrap();
             let _: PaymentCreatedIndex = resp.index;
             let _: TimestampMs = resp.created_at;
 
