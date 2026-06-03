@@ -29,11 +29,9 @@ mod test {
                 CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
                 GetUpdatedPaymentsResponse, ListPaymentsResponse, NodeInfo,
-                PayInvoiceRequest, PayInvoiceResponse, PayLnurlRequest,
-                PayLnurlResponse, PayOfferRequest, PayOfferResponse,
-                PayRequest, PayResponse, PayableDetails, PaymentSyncSummary,
+                PayInvoiceRequest, PayLnurlRequest, PayOfferRequest,
+                PayRequest, PayableDetails, PaymentSyncSummary,
                 UpdatePersonalNoteRequest, WithdrawLnurlRequest,
-                WithdrawLnurlResponse,
             },
             payment::{
                 ClientPaymentId, LnClaimId, Order, Payment,
@@ -281,9 +279,7 @@ mod test {
                 message: None,
                 personal_note: None,
             };
-            let resp: PayResponse = wallet.pay(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
+            let _: Payment = wallet.pay(req).await.unwrap();
 
             // create_invoice
             let req = CreateInvoiceRequest {
@@ -310,10 +306,7 @@ mod test {
                 fallback_amount: None,
                 personal_note: Some("Test payment".to_string()),
             };
-            let resp: PayInvoiceResponse =
-                wallet.pay_invoice(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
+            let _: Payment = wallet.pay_invoice(req).await.unwrap();
 
             // create_offer
             let req = CreateOfferRequest {
@@ -333,34 +326,27 @@ mod test {
                 message: None,
                 personal_note: None,
             };
-            let resp: PayOfferResponse = wallet.pay_offer(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
+            let _: Payment = wallet.pay_offer(req).await.unwrap();
 
             // pay_lnurl
             let req = PayLnurlRequest {
-                lnurl: None,
+                lnurl: Some("lnurl1...".to_string()),
                 pay_request: None,
                 amount: Amount::from_sats_u32(1000),
                 message: None,
                 personal_note: None,
             };
-            let resp: PayLnurlResponse = wallet.pay_lnurl(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
+            let _: Payment = wallet.pay_lnurl(req).await.unwrap();
 
             // withdraw_lnurl
             let req = WithdrawLnurlRequest {
-                lnurl: None,
+                lnurl: Some("lnurl1...".to_string()),
                 withdraw_request: None,
-                amount: None,
+                amount: Some(Amount::from_sats_u32(1000)),
                 description: None,
                 personal_note: None,
             };
-            let resp: WithdrawLnurlResponse =
-                wallet.withdraw_lnurl(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
+            let _: Payment = wallet.withdraw_lnurl(req).await.unwrap();
 
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
