@@ -140,6 +140,7 @@ async fn run() -> anyhow::Result<()> {
         expiration_secs: Some(3600), // 1 hour
         amount: None,                // Amountless invoice
         description: Some("Test invoice from rust-example".to_string()),
+        personal_note: None,
         partner_pk: None,
         partner_prop_fee: None,
         partner_base_fee: None,

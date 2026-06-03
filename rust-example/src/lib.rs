@@ -290,6 +290,7 @@ mod test {
                 expiration_secs: Some(3600),
                 amount: None,
                 description: None,
+                personal_note: None,
                 partner_pk: None,
                 partner_prop_fee: None,
                 partner_base_fee: None,
