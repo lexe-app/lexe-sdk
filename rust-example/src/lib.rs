@@ -355,6 +355,7 @@ mod test {
                 withdraw_request: None,
                 amount: None,
                 description: None,
+                personal_note: None,
             };
             let resp: WithdrawLnurlResponse =
                 wallet.withdraw_lnurl(req).await.unwrap();
