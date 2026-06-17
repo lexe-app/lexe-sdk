@@ -41,7 +41,7 @@ mod test {
             },
             util::{Ppm, TimestampMs},
         },
-        util::ByteArray,
+        util::{ed25519, ByteArray},
         wallet::LexeWallet,
     };
 
@@ -108,6 +108,10 @@ mod test {
         let _: String = user_pk.to_hex();
         let node_pk: NodePk = root_seed.derive_node_pk();
         let _: String = node_pk.to_hex();
+
+        // --- Crypto types ---
+        let pubkey: ed25519::PublicKey = todo!();
+        let _: String = pubkey.to_string();
         let encrypted: Vec<u8> =
             root_seed.password_encrypt("password").unwrap();
         let _root_seed: RootSeed =
