@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod test {
-    use std::path::PathBuf;
+    use std::{collections::HashMap, path::PathBuf};
 
     use lexe::{
         bip39::Mnemonic,
@@ -24,13 +24,15 @@ mod test {
                 Offer, PaymentMethod, Txid,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, ClaimableDetails,
+                AnalyzeRequest, AnalyzeResponse, ClaimableDetails, ClientInfo,
+                CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
-                GetPaymentResponse, GetUpdatedPaymentsRequest,
-                GetUpdatedPaymentsResponse, ListPaymentsResponse, NodeInfo,
-                PayInvoiceRequest, PayLnurlRequest, PayOfferRequest,
-                PayRequest, PayableDetails, PaymentSyncSummary,
+                CreateOfferRequest, CreateOfferResponse, GetClientResponse,
+                GetPaymentRequest, GetPaymentResponse,
+                GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
+                ListPaymentsResponse, NodeInfo, PayInvoiceRequest,
+                PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
+                PaymentSyncSummary, RevokeClientRequest, UpdateClientRequest,
                 UpdatePersonalNoteRequest, WithdrawLnurlRequest,
             },
             payment::{
@@ -388,6 +390,38 @@ mod test {
             // update_personal_note
             let req: UpdatePersonalNoteRequest = todo!();
             wallet.update_personal_note(req).await.unwrap();
+
+            // get_clients
+            let resp: GetClientResponse = wallet.get_clients().await.unwrap();
+            let clients: HashMap<ed25519::PublicKey, ClientInfo> = resp.clients;
+            let info: ClientInfo = clients.into_values().next().unwrap();
+            let _: ed25519::PublicKey = info.client_pk;
+            let _: TimestampMs = info.created_at;
+            let _: Option<TimestampMs> = info.expires_at;
+            let _: Option<String> = info.label;
+
+            // create_client
+            let req = CreateClientRequest {
+                expires_at: None,
+                label: Some("my-client".to_string()),
+            };
+            let resp: CreateClientResponse =
+                wallet.create_client(req).await.unwrap();
+            let _: ClientCredentials = resp.client_credentials;
+            let client_pk: ed25519::PublicKey = resp.client_pk;
+            let _: TimestampMs = resp.created_at;
+
+            // update_client
+            let req = UpdateClientRequest {
+                client_pk,
+                new_label: Some(Some("renamed-client".to_string())),
+                new_expires_at: Some(None),
+            };
+            wallet.update_client(req).await.unwrap();
+
+            // revoke_client
+            let req = RevokeClientRequest { client_pk };
+            wallet.revoke_client(req).await.unwrap();
         }
 
         async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
