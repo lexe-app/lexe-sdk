@@ -257,11 +257,13 @@ mod test {
                     let _: Option<Amount> = bip321_amount;
                 }
                 PaymentMethod::LnurlPay {
-                    lnurl: _,
                     pay_request,
+                    lnurl: _,
+                    lightning_address,
                 } => {
                     let _: LnurlPayRequest = pay_request;
                     let _: LnurlPayRequestMetadata = pay_request.metadata;
+                    let _: Option<String> = lightning_address;
                 }
             };
             // claimables
