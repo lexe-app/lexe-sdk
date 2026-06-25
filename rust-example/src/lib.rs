@@ -252,9 +252,11 @@ mod test {
                 PaymentMethod::Offer {
                     offer,
                     bip321_amount,
+                    human_bitcoin_address,
                 } => {
                     let _: Offer = offer;
                     let _: Option<Amount> = bip321_amount;
+                    let _: Option<String> = human_bitcoin_address;
                 }
                 PaymentMethod::LnurlPay {
                     pay_request,
