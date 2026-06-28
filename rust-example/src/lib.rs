@@ -4,7 +4,11 @@
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashMap, path::PathBuf, sync::Arc};
+    use std::{
+        collections::{BTreeSet, HashMap},
+        path::PathBuf,
+        sync::Arc,
+    };
 
     use lexe::{
         bip39::Mnemonic,
@@ -20,7 +24,7 @@ mod test {
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
-                NodePk, RootSeed, UserPk,
+                NodePk, RootSeed, Scope, UserPk,
             },
             bitcoin::{
                 Amount, ChannelId, ClaimMethod, ConfirmationPriority, Invoice,
@@ -598,31 +602,43 @@ mod test {
                 created_at,
                 expires_at,
                 label,
+                scopes,
+                permissions,
+                effective_permissions,
             } = clients.into_values().next().unwrap();
             let _: ed25519::PublicKey = client_pk;
             let _: TimestampMs = created_at;
             let _: Option<TimestampMs> = expires_at;
             let _: Option<String> = label;
+            let _: Vec<String> = scopes;
+            let _: Vec<String> = permissions;
+            let _: Vec<String> = effective_permissions;
 
             // create_client
             let req = CreateClientRequest {
                 expires_at: None,
                 label: Some("my-client".to_string()),
+                scopes: BTreeSet::from([Scope::Full]),
+                permissions: Vec::new(),
             };
             let CreateClientResponse {
                 client_pk,
                 client_credentials,
                 created_at,
+                effective_permissions,
             } = wallet.create_client(req).await.unwrap();
             let _: ed25519::PublicKey = client_pk;
             let _: ClientCredentials = client_credentials;
             let _: TimestampMs = created_at;
+            let _: Vec<String> = effective_permissions;
 
             // update_client
             let req = UpdateClientRequest {
                 client_pk,
                 new_label: Some(Some("renamed-client".to_string())),
                 new_expires_at: Some(None),
+                new_permissions: None,
+                new_scopes: None,
             };
             let ClientInfoResponse { client } =
                 wallet.update_client(req).await.unwrap();
