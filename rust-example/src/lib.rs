@@ -25,11 +25,11 @@ mod test {
             },
             command::{
                 AnalyzeRequest, AnalyzeResponse, ClaimableDetails, ClientInfo,
-                CreateClientRequest, CreateClientResponse,
+                ClientInfoResponse, CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse, GetClientResponse,
-                GetPaymentRequest, GetPaymentResponse,
-                GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
+                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
+                GetPaymentResponse, GetUpdatedPaymentsRequest,
+                GetUpdatedPaymentsResponse, ListClientsResponse,
                 ListPaymentsResponse, NodeInfo, PayInvoiceRequest,
                 PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
                 PaymentSyncSummary, RevokeClientRequest, UpdateClientRequest,
@@ -391,8 +391,9 @@ mod test {
             let req: UpdatePersonalNoteRequest = todo!();
             wallet.update_personal_note(req).await.unwrap();
 
-            // get_clients
-            let resp: GetClientResponse = wallet.get_clients().await.unwrap();
+            // list_clients
+            let resp: ListClientsResponse =
+                wallet.list_clients().await.unwrap();
             let clients: HashMap<ed25519::PublicKey, ClientInfo> = resp.clients;
             let info: ClientInfo = clients.into_values().next().unwrap();
             let _: ed25519::PublicKey = info.client_pk;
@@ -417,11 +418,13 @@ mod test {
                 new_label: Some(Some("renamed-client".to_string())),
                 new_expires_at: Some(None),
             };
-            wallet.update_client(req).await.unwrap();
+            let _: ClientInfoResponse =
+                wallet.update_client(req).await.unwrap();
 
             // revoke_client
             let req = RevokeClientRequest { client_pk };
-            wallet.revoke_client(req).await.unwrap();
+            let _: ClientInfoResponse =
+                wallet.revoke_client(req).await.unwrap();
         }
 
         async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
