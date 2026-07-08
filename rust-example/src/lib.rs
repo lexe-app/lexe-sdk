@@ -23,18 +23,20 @@ mod test {
                 NodePk, RootSeed, UserPk,
             },
             bitcoin::{
-                Amount, ClaimMethod, ConfirmationPriority, Invoice,
+                Amount, ChannelId, ClaimMethod, ConfirmationPriority, Invoice,
                 LnurlPayRequest, LnurlPayRequestMetadata, LnurlWithdrawRequest,
-                Offer, PaymentMethod, Txid,
+                Offer, OutPoint, PaymentMethod, Txid, UserChannelId,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, ClaimableDetails, ClientInfo,
-                ClientInfoResponse, CreateClientRequest, CreateClientResponse,
+                AnalyzeRequest, AnalyzeResponse, ChannelDetails,
+                ClaimableDetails, ClientInfo, ClientInfoResponse,
+                CloseChannelRequest, CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
                 CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
-                GetUpdatedPaymentsResponse, ListClientsResponse,
-                ListPaymentsResponse, NodeInfo, PayInvoiceRequest,
+                GetUpdatedPaymentsResponse, ListChannelsResponse,
+                ListClientsResponse, ListPaymentsResponse, NodeInfo,
+                OpenChannelRequest, OpenChannelResponse, PayInvoiceRequest,
                 PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
                 PaymentSyncSummary, RevokeClientRequest, UpdateClientRequest,
                 UpdatePersonalNoteRequest, WithdrawLnurlRequest,
@@ -249,6 +251,48 @@ mod test {
             let _: Amount = onchain_trusted_balance;
             let _: usize = num_channels;
             let _: usize = num_usable_channels;
+
+            // list_channels
+            let ListChannelsResponse { channels } =
+                wallet.list_channels().await.unwrap();
+            let ChannelDetails {
+                channel_id,
+                user_channel_id,
+                funding_txo,
+                is_usable,
+                channel_value,
+                our_balance,
+                their_balance,
+                punishment_reserve,
+                outbound_capacity,
+                inbound_capacity,
+            } = channels.into_iter().next().unwrap();
+            let _: ChannelId = channel_id;
+            let _: UserChannelId = user_channel_id;
+            let _: Option<OutPoint> = funding_txo;
+            let _: bool = is_usable;
+            let _: Amount = channel_value;
+            let _: Amount = our_balance;
+            let _: Amount = their_balance;
+            let _: Amount = punishment_reserve;
+            let _: Amount = outbound_capacity;
+            let _: Amount = inbound_capacity;
+
+            // open_channel
+            let req = OpenChannelRequest {
+                value: Amount::from_sats_u32(1_000_000),
+                user_channel_id: None,
+            };
+            let OpenChannelResponse {
+                channel_id,
+                user_channel_id,
+            } = wallet.open_channel(req).await.unwrap();
+            let _: ChannelId = channel_id;
+            let _: UserChannelId = user_channel_id;
+
+            // close_channel
+            let req = CloseChannelRequest { channel_id };
+            wallet.close_channel(req).await.unwrap();
 
             // analyze
             let req = AnalyzeRequest {
