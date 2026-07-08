@@ -4,15 +4,19 @@
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashMap, path::PathBuf};
+    use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
     use lexe::{
         bip39::Mnemonic,
-        bitcoin::address::Address,
+        bitcoin::{
+            address::{Address, NetworkUnchecked},
+            Transaction,
+        },
         config::{
             DeployEnv, Network, WalletEnv, WalletEnvConfig, WalletEnvDbConfig,
             WalletUserConfig, WalletUserDbConfig,
         },
+        semver::Version,
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
@@ -36,10 +40,10 @@ mod test {
                 UpdatePersonalNoteRequest, WithdrawLnurlRequest,
             },
             payment::{
-                ClientPaymentId, LnClaimId, Order, Payment,
+                ClientPaymentId, LnClaimId, OfferId, Order, Payment,
                 PaymentCreatedIndex, PaymentDirection, PaymentFilter,
-                PaymentHash, PaymentId, PaymentKind, PaymentRail,
-                PaymentSecret, PaymentStatus, PaymentUpdatedIndex,
+                PaymentHash, PaymentId, PaymentKind, PaymentPreimage,
+                PaymentRail, PaymentSecret, PaymentStatus, PaymentUpdatedIndex,
             },
             util::{Ppm, TimestampMs},
         },
@@ -165,16 +169,21 @@ mod test {
         // --- LexeWallet DB methods ---
 
         async fn test_wallet_db_async(wallet: &LexeWallet) {
-            let summary: PaymentSyncSummary =
-                wallet.sync_payments().await.unwrap();
-            let _: usize = summary.num_new;
-            let _: usize = summary.num_updated;
+            let PaymentSyncSummary {
+                num_new,
+                num_updated,
+            } = wallet.sync_payments().await.unwrap();
+            let _: usize = num_new;
+            let _: usize = num_updated;
 
-            let resp: ListPaymentsResponse = wallet
+            let ListPaymentsResponse {
+                payments,
+                next_index,
+            } = wallet
                 .list_payments(&PaymentFilter::All, None, None, None)
                 .unwrap();
-            let _: Vec<Payment> = resp.payments;
-            let _: Option<PaymentCreatedIndex> = resp.next_index;
+            let _: Vec<Payment> = payments;
+            let _: Option<PaymentCreatedIndex> = next_index;
 
             // Test all filter variants
             let _ = wallet.list_payments(
@@ -213,28 +222,60 @@ mod test {
 
         async fn test_wallet_async(wallet: &LexeWallet) {
             // node_info
-            let info: NodeInfo = wallet.node_info().await.unwrap();
-            let _: Measurement = info.measurement;
-            let _: String = info.measurement.to_hex();
-            let _: UserPk = info.user_pk;
-            let _: NodePk = info.node_pk;
-            let _: Amount = info.balance;
-            let _: Amount = info.lightning_balance;
+            let NodeInfo {
+                version,
+                measurement,
+                user_pk,
+                node_pk,
+                balance,
+                lightning_balance,
+                lightning_sendable_balance,
+                lightning_max_sendable_balance,
+                onchain_balance,
+                onchain_trusted_balance,
+                num_channels,
+                num_usable_channels,
+            } = wallet.node_info().await.unwrap();
+            let _: Version = version;
+            let _: Measurement = measurement;
+            let _: String = measurement.to_hex();
+            let _: UserPk = user_pk;
+            let _: NodePk = node_pk;
+            let _: Amount = balance;
+            let _: Amount = lightning_balance;
+            let _: Amount = lightning_sendable_balance;
+            let _: Amount = lightning_max_sendable_balance;
+            let _: Amount = onchain_balance;
+            let _: Amount = onchain_trusted_balance;
+            let _: usize = num_channels;
+            let _: usize = num_usable_channels;
 
             // analyze
             let req = AnalyzeRequest {
                 payment_string: "lnondeezn".to_owned(),
             };
-            let resp: AnalyzeResponse = wallet.analyze(req).await.unwrap();
+            let AnalyzeResponse {
+                payables,
+                claimables,
+            } = wallet.analyze(req).await.unwrap();
             // payables
-            let payables: Vec<PayableDetails> = resp.payables;
-            let details: PayableDetails = payables.into_iter().next().unwrap();
-            let _: String = details.payable;
-            let _: Amount = details.amount.unwrap();
-            let _: TimestampMs = details.expires_at.unwrap();
-            let payment_method: PaymentMethod = details.method;
-            let _: &'static str = payment_method.kind();
-            match payment_method {
+            let PayableDetails {
+                payable,
+                method,
+                description,
+                amount,
+                min_amount,
+                max_amount,
+                expires_at,
+            } = payables.into_iter().next().unwrap();
+            let _: String = payable;
+            let _: Option<String> = description;
+            let _: Option<Amount> = amount;
+            let _: Option<Amount> = min_amount;
+            let _: Option<Amount> = max_amount;
+            let _: Option<TimestampMs> = expires_at;
+            let _: &'static str = method.kind();
+            match method {
                 PaymentMethod::Onchain {
                     address,
                     amount,
@@ -269,11 +310,18 @@ mod test {
                 }
             };
             // claimables
-            let claimables: Vec<ClaimableDetails> = resp.claimables;
-            let details: ClaimableDetails =
-                claimables.into_iter().next().unwrap();
-            let claim_method: ClaimMethod = details.method;
-            match claim_method {
+            let ClaimableDetails {
+                claimable,
+                method,
+                description,
+                min_amount,
+                max_amount,
+            } = claimables.into_iter().next().unwrap();
+            let _: String = claimable;
+            let _: Option<String> = description;
+            let _: Option<Amount> = min_amount;
+            let _: Option<Amount> = max_amount;
+            match method {
                 ClaimMethod::LnurlWithdraw {
                     lnurl: _,
                     withdraw_request,
@@ -301,13 +349,24 @@ mod test {
                 partner_prop_fee: None,
                 partner_base_fee: None,
             };
-            let resp: CreateInvoiceResponse =
-                wallet.create_invoice(req).await.unwrap();
-            let _: PaymentCreatedIndex = resp.index;
-            let _: TimestampMs = resp.created_at;
-            let _: TimestampMs = resp.expires_at;
-            let _: PaymentHash = resp.payment_hash;
-            let _: PaymentSecret = resp.payment_secret;
+            let CreateInvoiceResponse {
+                index,
+                invoice,
+                description,
+                amount,
+                created_at,
+                expires_at,
+                payment_hash,
+                payment_secret,
+            } = wallet.create_invoice(req).await.unwrap();
+            let _: PaymentCreatedIndex = index;
+            let _: Invoice = invoice;
+            let _: Option<String> = description;
+            let _: Option<Amount> = amount;
+            let _: TimestampMs = created_at;
+            let _: TimestampMs = expires_at;
+            let _: PaymentHash = payment_hash;
+            let _: PaymentSecret = payment_secret;
 
             // pay_invoice
             let invoice: Invoice = todo!();
@@ -324,9 +383,9 @@ mod test {
                 min_amount: None,
                 expiration_secs: None,
             };
-            let resp: CreateOfferResponse =
+            let CreateOfferResponse { offer } =
                 wallet.create_offer(req).await.unwrap();
-            let _: Offer = resp.offer;
+            let _: Offer = offer;
 
             // pay_offer
             let offer: Offer = todo!();
@@ -360,61 +419,111 @@ mod test {
 
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
-            let resp: GetPaymentResponse =
+            let GetPaymentResponse { payment } =
                 wallet.get_payment(req).await.unwrap();
-            let payment: Payment = resp.payment.unwrap();
-            let _: PaymentCreatedIndex = payment.index;
-            let _: PaymentId = payment.index.id;
+            let Payment {
+                index,
+                rail,
+                kind,
+                direction,
+                hash,
+                preimage,
+                offer_id,
+                txid,
+                amount,
+                fees,
+                partner_pk,
+                partner_prop_fee,
+                partner_base_fee,
+                status,
+                status_msg,
+                address,
+                invoice,
+                tx,
+                payer_name,
+                message,
+                personal_note,
+                priority,
+                expires_at,
+                finalized_at,
+                created_at,
+                updated_at,
+            } = payment.unwrap();
+            let _: PaymentCreatedIndex = index;
+            let _: PaymentId = index.id;
+            let _: PaymentRail = rail;
+            let _: PaymentKind = kind;
+            let _: PaymentDirection = direction;
+            let _: Option<PaymentHash> = hash;
+            let _: Option<PaymentPreimage> = preimage;
+            let _: Option<OfferId> = offer_id;
+            let _: Option<Txid> = txid;
+            let _: Option<Amount> = amount;
+            let _: Amount = fees;
+            let _: Option<UserPk> = partner_pk;
+            let _: Option<Ppm> = partner_prop_fee;
+            let _: Option<Amount> = partner_base_fee;
+            let _: PaymentStatus = status;
+            let _: String = status_msg;
+            let _: Option<Arc<Address<NetworkUnchecked>>> = address;
+            let _: Option<Arc<Invoice>> = invoice;
+            let _: Option<Arc<Transaction>> = tx;
+            let _: Option<String> = payer_name;
+            let _: Option<String> = message;
+            let _: Option<String> = personal_note;
+            let _: Option<ConfirmationPriority> = priority;
+            let _: Option<TimestampMs> = expires_at;
+            let _: Option<TimestampMs> = finalized_at;
+            let _: TimestampMs = created_at;
+            let _: TimestampMs = updated_at;
             // PaymentId variant payload types
             let _: ClientPaymentId = todo!();
             let _: LnClaimId = todo!();
-            let _: PaymentRail = payment.rail;
-            let _: PaymentKind = payment.kind;
-            let _: PaymentDirection = payment.direction;
-            let _: PaymentStatus = payment.status;
-            let _: Amount = payment.fees;
-            let _: Option<UserPk> = payment.partner_pk;
-            let _: Option<Ppm> = payment.partner_prop_fee;
-            let _: Option<Amount> = payment.partner_base_fee;
-            let _: TimestampMs = payment.created_at;
-            let _: TimestampMs = payment.updated_at;
-            let _: Option<Txid> = payment.txid;
-            let _: Option<ConfirmationPriority> = payment.priority;
 
             // get_updated_payments
             let req: GetUpdatedPaymentsRequest = GetUpdatedPaymentsRequest {
                 start_index: None,
                 limit: None,
             };
-            let resp: GetUpdatedPaymentsResponse =
-                wallet.get_updated_payments(req).await.unwrap();
-            let _: Vec<Payment> = resp.payments;
-            let _: Option<PaymentUpdatedIndex> = resp.updated_index;
+            let GetUpdatedPaymentsResponse {
+                payments,
+                updated_index,
+            } = wallet.get_updated_payments(req).await.unwrap();
+            let _: Vec<Payment> = payments;
+            let _: Option<PaymentUpdatedIndex> = updated_index;
 
             // update_personal_note
             let req: UpdatePersonalNoteRequest = todo!();
             wallet.update_personal_note(req).await.unwrap();
 
             // list_clients
-            let resp: ListClientsResponse =
+            let ListClientsResponse { clients } =
                 wallet.list_clients().await.unwrap();
-            let clients: HashMap<ed25519::PublicKey, ClientInfo> = resp.clients;
-            let info: ClientInfo = clients.into_values().next().unwrap();
-            let _: ed25519::PublicKey = info.client_pk;
-            let _: TimestampMs = info.created_at;
-            let _: Option<TimestampMs> = info.expires_at;
-            let _: Option<String> = info.label;
+            let clients: HashMap<ed25519::PublicKey, ClientInfo> = clients;
+            let ClientInfo {
+                client_pk,
+                created_at,
+                expires_at,
+                label,
+            } = clients.into_values().next().unwrap();
+            let _: ed25519::PublicKey = client_pk;
+            let _: TimestampMs = created_at;
+            let _: Option<TimestampMs> = expires_at;
+            let _: Option<String> = label;
 
             // create_client
             let req = CreateClientRequest {
                 expires_at: None,
                 label: Some("my-client".to_string()),
             };
-            let resp: CreateClientResponse =
-                wallet.create_client(req).await.unwrap();
-            let _: ClientCredentials = resp.client_credentials;
-            let client_pk: ed25519::PublicKey = resp.client_pk;
-            let _: TimestampMs = resp.created_at;
+            let CreateClientResponse {
+                client_pk,
+                client_credentials,
+                created_at,
+            } = wallet.create_client(req).await.unwrap();
+            let _: ClientCredentials = client_credentials;
+            let _: ed25519::PublicKey = client_pk;
+            let _: TimestampMs = created_at;
 
             // update_client
             let req = UpdateClientRequest {
@@ -422,13 +531,15 @@ mod test {
                 new_label: Some(Some("renamed-client".to_string())),
                 new_expires_at: Some(None),
             };
-            let _: ClientInfoResponse =
+            let ClientInfoResponse { client } =
                 wallet.update_client(req).await.unwrap();
+            let _: ClientInfo = client;
 
             // revoke_client
             let req = RevokeClientRequest { client_pk };
-            let _: ClientInfoResponse =
+            let ClientInfoResponse { client } =
                 wallet.revoke_client(req).await.unwrap();
+            let _: ClientInfo = client;
         }
 
         async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
