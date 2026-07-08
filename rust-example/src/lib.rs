@@ -16,7 +16,7 @@ mod test {
             DeployEnv, Network, WalletEnv, WalletEnvConfig, WalletEnvDbConfig,
             WalletUserConfig, WalletUserDbConfig,
         },
-        semver::Version,
+        semver,
         types::{
             auth::{
                 ClientCredentials, Credentials, CredentialsRef, Measurement,
@@ -171,6 +171,7 @@ mod test {
         // --- LexeWallet DB methods ---
 
         async fn test_wallet_db_async(wallet: &LexeWallet) {
+            // sync_payments
             let PaymentSyncSummary {
                 num_new,
                 num_updated,
@@ -178,6 +179,7 @@ mod test {
             let _: usize = num_new;
             let _: usize = num_updated;
 
+            // list_payments
             let ListPaymentsResponse {
                 payments,
                 next_index,
@@ -238,7 +240,7 @@ mod test {
                 num_channels,
                 num_usable_channels,
             } = wallet.node_info().await.unwrap();
-            let _: Version = version;
+            let _: semver::Version = version;
             let _: Measurement = measurement;
             let _: String = measurement.to_hex();
             let _: UserPk = user_pk;
@@ -302,6 +304,7 @@ mod test {
                 payables,
                 claimables,
             } = wallet.analyze(req).await.unwrap();
+
             // payables
             let PayableDetails {
                 payable,
@@ -345,11 +348,12 @@ mod test {
                 }
                 PaymentMethod::LnurlPay {
                     pay_request,
-                    lnurl: _,
+                    lnurl,
                     lightning_address,
                 } => {
                     let _: LnurlPayRequest = pay_request;
                     let _: LnurlPayRequestMetadata = pay_request.metadata;
+                    let _: String = lnurl;
                     let _: Option<String> = lightning_address;
                 }
             };
@@ -367,9 +371,10 @@ mod test {
             let _: Option<Amount> = max_amount;
             match method {
                 ClaimMethod::LnurlWithdraw {
-                    lnurl: _,
+                    lnurl,
                     withdraw_request,
                 } => {
+                    let _: String = lnurl;
                     let _: LnurlWithdrawRequest = withdraw_request;
                 }
             }
@@ -495,6 +500,9 @@ mod test {
             } = payment.unwrap();
             let _: PaymentCreatedIndex = index;
             let _: PaymentId = index.id;
+            // PaymentId variant payload types
+            let _: ClientPaymentId = todo!();
+            let _: LnClaimId = todo!();
             let _: PaymentRail = rail;
             let _: PaymentKind = kind;
             let _: PaymentDirection = direction;
@@ -520,9 +528,6 @@ mod test {
             let _: Option<TimestampMs> = finalized_at;
             let _: TimestampMs = created_at;
             let _: TimestampMs = updated_at;
-            // PaymentId variant payload types
-            let _: ClientPaymentId = todo!();
-            let _: LnClaimId = todo!();
 
             // get_updated_payments
             let req: GetUpdatedPaymentsRequest = GetUpdatedPaymentsRequest {
@@ -565,8 +570,8 @@ mod test {
                 client_credentials,
                 created_at,
             } = wallet.create_client(req).await.unwrap();
-            let _: ClientCredentials = client_credentials;
             let _: ed25519::PublicKey = client_pk;
+            let _: ClientCredentials = client_credentials;
             let _: TimestampMs = created_at;
 
             // update_client
