@@ -28,9 +28,10 @@ mod test {
                 Offer, OutPoint, PaymentMethod, Txid, UserChannelId,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, ChannelDetails,
-                ClaimableDetails, ClientInfo, ClientInfoResponse,
-                CloseChannelRequest, CreateClientRequest, CreateClientResponse,
+                AnalyzeRequest, AnalyzeResponse, CashAppBuyRequest,
+                CashAppBuyResponse, ChannelDetails, ClaimableDetails,
+                ClientInfo, ClientInfoResponse, CloseChannelRequest,
+                CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
                 CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
@@ -465,6 +466,17 @@ mod test {
                 personal_note: None,
             };
             let _: Payment = wallet.withdraw_lnurl(req).await.unwrap();
+
+            // buy_with_cash_app
+            let req = CashAppBuyRequest {
+                amount: Amount::from_sats_u32(5000),
+            };
+            let CashAppBuyResponse {
+                redirect_url,
+                index,
+            } = wallet.buy_with_cash_app(req).await.unwrap();
+            let _: String = redirect_url;
+            let _: PaymentCreatedIndex = index;
 
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
