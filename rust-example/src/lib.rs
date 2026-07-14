@@ -33,7 +33,8 @@ mod test {
                 ClientInfo, ClientInfoResponse, CloseChannelRequest,
                 CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse, GetPaymentRequest,
+                CreateOfferRequest, CreateOfferResponse,
+                GetHumanBitcoinAddressResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
                 GetUpdatedPaymentsResponse, ListChannelsResponse,
                 ListClientsResponse, ListPaymentsResponse, NodeInfo,
@@ -477,6 +478,18 @@ mod test {
             } = wallet.buy_with_cash_app(req).await.unwrap();
             let _: String = redirect_url;
             let _: PaymentCreatedIndex = index;
+
+            // get_human_bitcoin_address
+            let GetHumanBitcoinAddressResponse {
+                human_bitcoin_address,
+                lightning_address,
+                offer,
+                updatable,
+            } = wallet.get_human_bitcoin_address().await.unwrap();
+            let _: String = human_bitcoin_address;
+            let _: String = lightning_address;
+            let _: Offer = offer;
+            let _: bool = updatable;
 
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
