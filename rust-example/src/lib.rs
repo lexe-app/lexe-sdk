@@ -491,6 +491,12 @@ mod test {
             let _: Offer = offer;
             let _: bool = updatable;
 
+            // update_human_bitcoin_address
+            let _: GetHumanBitcoinAddressResponse = wallet
+                .update_human_bitcoin_address("username")
+                .await
+                .unwrap();
+
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
             let GetPaymentResponse { payment } =
