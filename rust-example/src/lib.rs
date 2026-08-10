@@ -41,7 +41,8 @@ mod test {
                 OpenChannelRequest, OpenChannelResponse, PayInvoiceRequest,
                 PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
                 PaymentSyncSummary, RevokeClientRequest, UpdateClientRequest,
-                UpdatePersonalNoteRequest, WithdrawLnurlRequest,
+                UpdatePersonalNoteRequest, WaitForNextPaymentRequest,
+                WaitForNextPaymentResponse, WithdrawLnurlRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, OfferId, Order, Payment,
@@ -571,6 +572,18 @@ mod test {
             } = wallet.get_updated_payments(req).await.unwrap();
             let _: Vec<Payment> = payments;
             let _: Option<PaymentUpdatedIndex> = updated_index;
+
+            // wait_for_next_payment
+            let req: WaitForNextPaymentRequest = WaitForNextPaymentRequest {
+                start_index: None,
+                timeout: None,
+            };
+            let WaitForNextPaymentResponse {
+                payment,
+                next_start_index,
+            } = wallet.wait_for_next_payment(req).await.unwrap();
+            let _: Payment = payment;
+            let _: PaymentUpdatedIndex = next_start_index;
 
             // update_personal_note
             let req: UpdatePersonalNoteRequest = todo!();
