@@ -29,7 +29,8 @@ mod test {
             bitcoin::{
                 Amount, ChannelId, ClaimMethod, ConfirmationPriority, Invoice,
                 LnurlPayRequest, LnurlPayRequestMetadata, LnurlWithdrawRequest,
-                Offer, OutPoint, PaymentMethod, Txid, UserChannelId,
+                Offer, OutPoint, PayerProof, PaymentMethod, Txid,
+                UserChannelId,
             },
             command::{
                 AnalyzeRequest, AnalyzeResponse, CashAppBuyRequest,
@@ -38,15 +39,17 @@ mod test {
                 CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
                 CreateOfferRequest, CreateOfferResponse,
+                CreatePayerProofRequest, CreatePayerProofResponse,
                 GetHumanBitcoinAddressResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
                 GetUpdatedPaymentsResponse, ListChannelsResponse,
                 ListClientsResponse, ListPaymentsResponse, NodeInfo,
                 OpenChannelRequest, OpenChannelResponse, PayInvoiceRequest,
                 PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
-                PaymentSyncSummary, RevokeClientRequest, UpdateClientRequest,
-                UpdatePersonalNoteRequest, WaitForNextPaymentRequest,
-                WaitForNextPaymentResponse, WithdrawLnurlRequest,
+                PayerProofDisclosures, PaymentSyncSummary, RevokeClientRequest,
+                UpdateClientRequest, UpdatePersonalNoteRequest,
+                WaitForNextPaymentRequest, WaitForNextPaymentResponse,
+                WithdrawLnurlRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, OfferId, Order, Payment,
@@ -501,6 +504,23 @@ mod test {
                 .update_human_bitcoin_address("username")
                 .await
                 .unwrap();
+
+            // create_payer_proof
+            let req: CreatePayerProofRequest = CreatePayerProofRequest {
+                index: todo!(),
+                disclosures: PayerProofDisclosures {
+                    offer_description: true,
+                    offer_issuer: true,
+                    invreq_payer_note: true,
+                    invoice_amount: true,
+                    invoice_created_at: true,
+                    additional_disclosures: BTreeSet::new(),
+                },
+                proof_note: Some("3f9a2c8e1b7d40561a0e".to_owned()),
+            };
+            let CreatePayerProofResponse { proof } =
+                wallet.create_payer_proof(req).await.unwrap();
+            let _: PayerProof = proof;
 
             // get_payment
             let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
