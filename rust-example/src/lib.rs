@@ -453,9 +453,11 @@ mod test {
 
             // pay_offer
             let offer: Offer = "lno1...".parse().unwrap();
+            let client_payment_id = ClientPaymentId::generate();
             let req = PayOfferRequest {
                 offer,
                 amount: Amount::from_sats_u32(1000),
+                client_payment_id: Some(client_payment_id),
                 message: None,
                 personal_note: None,
             };
