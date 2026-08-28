@@ -40,6 +40,7 @@ mod test {
                 CreateInvoiceRequest, CreateInvoiceResponse,
                 CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
+                CredentialKind, GetClientInfoResponse,
                 GetHumanBitcoinAddressResponse, GetPaymentRequest,
                 GetPaymentResponse, GetUpdatedPaymentsRequest,
                 GetUpdatedPaymentsResponse, ListChannelsResponse,
@@ -612,6 +613,27 @@ mod test {
             // update_personal_note
             let req: UpdatePersonalNoteRequest = todo!();
             wallet.update_personal_note(req).await.unwrap();
+
+            // client_info
+            let GetClientInfoResponse {
+                kind,
+                client_pk,
+                created_at,
+                expires_at,
+                label,
+                scopes,
+                permissions,
+                effective_permissions,
+            } = wallet.client_info().await.unwrap();
+            let _: CredentialKind = kind;
+            let _: Option<ed25519::PublicKey> = client_pk;
+            let _: Option<TimestampMs> = created_at;
+            let _: Option<TimestampMs> = expires_at;
+            let _: Option<String> = label;
+            let _: Vec<String> = scopes;
+            let _: Vec<String> = permissions;
+            let _: Vec<String> = effective_permissions;
+            let _ = matches!(kind, CredentialKind::RootSeed);
 
             // list_clients
             let ListClientsResponse { clients } =
