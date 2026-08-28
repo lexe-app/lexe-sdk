@@ -41,12 +41,13 @@ mod test {
                 CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
-                GetHumanBitcoinAddressResponse, GetPaymentRequest,
-                GetPaymentResponse, GetUpdatedPaymentsRequest,
-                GetUpdatedPaymentsResponse, ListChannelsResponse,
-                ListClientsResponse, ListPaymentsResponse, NodeInfo,
-                OpenChannelRequest, OpenChannelResponse, PayInvoiceRequest,
-                PayLnurlRequest, PayOfferRequest, PayRequest, PayableDetails,
+                GetHumanBitcoinAddressResponse, GetNextUnusedAddressResponse,
+                GetPaymentRequest, GetPaymentResponse,
+                GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
+                ListChannelsResponse, ListClientsResponse,
+                ListPaymentsResponse, NodeInfo, OpenChannelRequest,
+                OpenChannelResponse, PayInvoiceRequest, PayLnurlRequest,
+                PayOfferRequest, PayRequest, PayableDetails,
                 PayerProofDisclosures, PaymentSyncSummary, RevokeClientRequest,
                 UpdateClientRequest, UpdatePersonalNoteRequest,
                 WaitForNextPaymentRequest, WaitForNextPaymentResponse,
@@ -456,6 +457,11 @@ mod test {
                 personal_note: None,
             };
             let _: Payment = wallet.pay_offer(req).await.unwrap();
+
+            // get_next_unused_address
+            let GetNextUnusedAddressResponse { address } =
+                wallet.get_next_unused_address().await.unwrap();
+            let _: Address<NetworkUnchecked> = address;
 
             // pay_lnurl
             let req = PayLnurlRequest {
