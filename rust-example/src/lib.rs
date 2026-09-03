@@ -33,10 +33,10 @@ mod test {
                 UserChannelId,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, CashAppBuyRequest,
-                CashAppBuyResponse, ChannelDetails, ClaimableDetails,
-                ClientInfo, ClientInfoResponse, CloseChannelRequest,
-                CreateClientRequest, CreateClientResponse,
+                AnalyzeRequest, AnalyzeResponse, CancelPaymentRequest,
+                CashAppBuyRequest, CashAppBuyResponse, ChannelDetails,
+                ClaimableDetails, ClientInfo, ClientInfoResponse,
+                CloseChannelRequest, CreateClientRequest, CreateClientResponse,
                 CreateInvoiceRequest, CreateInvoiceResponse,
                 CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
@@ -648,6 +648,12 @@ mod test {
             let _: Vec<String> = permissions;
             let _: Vec<String> = effective_permissions;
             let _ = matches!(kind, CredentialKind::RootSeed);
+
+            // cancel_payment
+            let req = CancelPaymentRequest {
+                index: "1687090000000-ln_6973...".parse().unwrap(),
+            };
+            wallet.cancel_payment(req).await.unwrap();
 
             // list_clients
             let ListClientsResponse { clients } =
