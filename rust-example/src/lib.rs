@@ -42,8 +42,9 @@ mod test {
                 CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
-                GetHumanBitcoinAddressResponse, GetNextUnusedAddressResponse,
-                GetPaymentByIdRequest, GetPaymentRequest, GetPaymentResponse,
+                GetExclusiveAddressResponse, GetHumanBitcoinAddressResponse,
+                GetNextUnusedAddressResponse, GetPaymentByIdRequest,
+                GetPaymentRequest, GetPaymentResponse,
                 GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
                 ListChannelsResponse, ListClientsResponse,
                 ListPaymentsResponse, NodeInfo, OpenChannelRequest,
@@ -483,6 +484,11 @@ mod test {
             // get_next_unused_address
             let GetNextUnusedAddressResponse { address } =
                 wallet.get_next_unused_address().await.unwrap();
+            let _: Address<NetworkUnchecked> = address;
+
+            // get_exclusive_address
+            let GetExclusiveAddressResponse { address } =
+                wallet.get_exclusive_address().await.unwrap();
             let _: Address<NetworkUnchecked> = address;
 
             // pay_onchain
