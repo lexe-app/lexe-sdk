@@ -434,10 +434,14 @@ mod test {
 
             // pay_invoice
             let invoice: Invoice = "lnbc1...".parse().unwrap();
+            let partner_pk: UserPk = UserPk::from_array([69; 32]);
             let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
                 personal_note: Some("Test payment".to_string()),
+                partner_pk: Some(partner_pk),
+                partner_prop_fee: Some(Ppm::new(10_000)),
+                partner_base_fee: Some(Amount::from_sats_u32(10)),
             };
             let _: Payment = wallet.pay_invoice(req).await.unwrap();
 
@@ -481,12 +485,16 @@ mod test {
             let _: Payment = wallet.pay_onchain(req).await.unwrap();
 
             // pay_lnurl
+            let partner_pk: UserPk = UserPk::from_array([69; 32]);
             let req = PayLnurlRequest {
                 lnurl: Some("lnurl1...".to_string()),
                 pay_request: None,
                 amount: Amount::from_sats_u32(1000),
                 message: None,
                 personal_note: None,
+                partner_pk: Some(partner_pk),
+                partner_prop_fee: Some(Ppm::new(10_000)),
+                partner_base_fee: Some(Amount::from_sats_u32(10)),
             };
             let _: Payment = wallet.pay_lnurl(req).await.unwrap();
 
