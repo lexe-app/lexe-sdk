@@ -36,10 +36,10 @@ mod test {
             command::{
                 AnalyzeRequest, AnalyzeResponse, CancelPaymentRequest,
                 CashAppBuyRequest, CashAppBuyResponse, ChannelDetails,
-                ClaimableDetails, ClientInfo, ClientInfoResponse,
-                CloseChannelRequest, CreateClientRequest, CreateClientResponse,
-                CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse,
+                CheckAddressResponse, ClaimableDetails, ClientInfo,
+                ClientInfoResponse, CloseChannelRequest, CreateClientRequest,
+                CreateClientResponse, CreateInvoiceRequest,
+                CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
                 GetExclusiveAddressResponse, GetHumanBitcoinAddressResponse,
@@ -490,6 +490,14 @@ mod test {
             let GetExclusiveAddressResponse { address } =
                 wallet.get_exclusive_address().await.unwrap();
             let _: Address<NetworkUnchecked> = address;
+
+            // check_address
+            let CheckAddressResponse {
+                payments,
+                synced_block_height,
+            } = wallet.check_address(address).await.unwrap();
+            let _: Vec<Payment> = payments;
+            let _: u32 = synced_block_height;
 
             // pay_onchain
             let address: Address<NetworkUnchecked> = "bc1...".parse().unwrap();
