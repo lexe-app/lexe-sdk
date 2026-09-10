@@ -69,17 +69,17 @@ mod test {
     /// and handle all results of all stable APIs, by writing fake code which
     /// references all of those types; in other words, all types can be named.
     ///
+    /// - Structs are constructed and destructured exhaustively, so adding a
+    ///   field fails compilation here until the example covers it.
+    /// - Values are built with real constructors on dummy inputs to prove that
+    ///   each type is also *instantiable* via the SDK.
+    ///
     /// This test is `#[ignore]`d because it can't actually run - it just needs
     /// to compile to verify all types are properly exported.
     #[ignore]
     #[test]
     fn test_stable_apis_nameable() {
-        #![allow(
-            dead_code,
-            unreachable_code,
-            unused_variables,
-            clippy::diverging_sub_expression
-        )]
+        #![allow(dead_code, unused_variables)]
 
         // --- Config types ---
         let wallet_env: WalletEnv = WalletEnv::mainnet();
@@ -92,9 +92,11 @@ mod test {
         let _env_config: WalletEnvConfig = WalletEnvConfig::testnet3();
 
         // --- Credential types ---
-        let root_seed: &RootSeed = todo!();
-        let client_creds: ClientCredentials = todo!();
-        let credentials: Credentials = Credentials::RootSeed(todo!());
+        let root_seed: &RootSeed = &RootSeed::from_bytes(&[69; 32]).unwrap();
+        let client_creds: ClientCredentials =
+            ClientCredentials::from_string("eyJ...").unwrap();
+        let credentials: Credentials =
+            Credentials::RootSeed(RootSeed::from_bytes(&[69; 32]).unwrap());
         let credentials: Credentials =
             Credentials::ClientCredentials(client_creds);
         let credentials_ref: CredentialsRef<'_> = credentials.as_ref();
@@ -130,7 +132,7 @@ mod test {
         let _: String = node_pk.to_hex();
 
         // --- Crypto types ---
-        let pubkey: ed25519::PublicKey = todo!();
+        let pubkey: ed25519::PublicKey = ed25519::PublicKey::new([69; 32]);
         let _: String = pubkey.to_string();
         let encrypted: Vec<u8> =
             root_seed.password_encrypt("password").unwrap();
@@ -226,7 +228,8 @@ mod test {
             wallet.clear_payments().unwrap();
 
             // wait_for_payment
-            let index: PaymentCreatedIndex = todo!();
+            let index: PaymentCreatedIndex =
+                "1687090000000-ln_6973...".parse().unwrap();
             let _: Payment =
                 wallet.wait_for_payment(index, None).await.unwrap();
         }
@@ -430,7 +433,7 @@ mod test {
             let _: PaymentSecret = payment_secret;
 
             // pay_invoice
-            let invoice: Invoice = todo!();
+            let invoice: Invoice = "lnbc1...".parse().unwrap();
             let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
@@ -449,7 +452,7 @@ mod test {
             let _: Offer = offer;
 
             // pay_offer
-            let offer: Offer = todo!();
+            let offer: Offer = "lno1...".parse().unwrap();
             let req = PayOfferRequest {
                 offer,
                 amount: Amount::from_sats_u32(1000),
@@ -514,7 +517,7 @@ mod test {
 
             // create_payer_proof
             let req: CreatePayerProofRequest = CreatePayerProofRequest {
-                index: todo!(),
+                index: "1687090000000-ln_6973...".parse().unwrap(),
                 disclosures: PayerProofDisclosures {
                     offer_description: true,
                     offer_issuer: true,
@@ -530,7 +533,9 @@ mod test {
             let _: PayerProof = proof;
 
             // get_payment
-            let req: GetPaymentRequest = GetPaymentRequest { index: todo!() };
+            let req: GetPaymentRequest = GetPaymentRequest {
+                index: "1687090000000-ln_6973...".parse().unwrap(),
+            };
             let GetPaymentResponse { payment } =
                 wallet.get_payment(req).await.unwrap();
             let Payment {
@@ -564,8 +569,8 @@ mod test {
             let _: PaymentCreatedIndex = index;
             let _: PaymentId = index.id;
             // PaymentId variant payload types
-            let _: ClientPaymentId = todo!();
-            let _: LnClaimId = todo!();
+            let _: ClientPaymentId = ClientPaymentId::from_array([69; 32]);
+            let _: LnClaimId = LnClaimId::from_array([69; 32]);
             let _: PaymentRail = rail;
             let _: PaymentKind = kind;
             let _: PaymentDirection = direction;
@@ -617,7 +622,10 @@ mod test {
             let _: PaymentUpdatedIndex = next_start_index;
 
             // update_personal_note
-            let req: UpdatePersonalNoteRequest = todo!();
+            let req = UpdatePersonalNoteRequest {
+                index: "1687090000000-ln_6973...".parse().unwrap(),
+                personal_note: Some("A note".to_string()),
+            };
             wallet.update_personal_note(req).await.unwrap();
 
             // client_info
@@ -705,7 +713,10 @@ mod test {
         }
 
         async fn test_provision(wallet: &LexeWallet) {
-            let credentials_ref: CredentialsRef<'_> = todo!();
+            let credentials: Credentials = Credentials::ClientCredentials(
+                ClientCredentials::from_string("eyJ...").unwrap(),
+            );
+            let credentials_ref: CredentialsRef<'_> = credentials.as_ref();
             wallet.provision(credentials_ref).await.unwrap();
         }
     }
