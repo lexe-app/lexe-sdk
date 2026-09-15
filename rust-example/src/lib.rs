@@ -571,6 +571,7 @@ mod test {
                 address,
                 invoice,
                 tx,
+                client_pk,
                 payer_name,
                 message,
                 personal_note,
@@ -602,6 +603,7 @@ mod test {
             let _: Option<Arc<Address<NetworkUnchecked>>> = address;
             let _: Option<Arc<Invoice>> = invoice;
             let _: Option<Arc<Transaction>> = tx;
+            let _: Option<ed25519::PublicKey> = client_pk;
             let _: Option<String> = payer_name;
             let _: Option<String> = message;
             let _: Option<String> = personal_note;
