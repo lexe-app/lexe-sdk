@@ -47,7 +47,7 @@ mod test {
                 ListChannelsResponse, ListClientsResponse,
                 ListPaymentsResponse, NodeInfo, OpenChannelRequest,
                 OpenChannelResponse, PayInvoiceRequest, PayLnurlRequest,
-                PayOfferRequest, PayRequest, PayableDetails,
+                PayOfferRequest, PayOnchainRequest, PayRequest, PayableDetails,
                 PayerProofDisclosures, PaymentSyncSummary, RevokeClientRequest,
                 UpdateClientRequest, UpdatePersonalNoteRequest,
                 WaitForNextPaymentRequest, WaitForNextPaymentResponse,
@@ -465,6 +465,17 @@ mod test {
             let GetNextUnusedAddressResponse { address } =
                 wallet.get_next_unused_address().await.unwrap();
             let _: Address<NetworkUnchecked> = address;
+
+            // pay_onchain
+            let address: Address<NetworkUnchecked> = "bc1...".parse().unwrap();
+            let req = PayOnchainRequest {
+                address,
+                amount: Amount::from_sats_u32(10_000),
+                priority: Some(ConfirmationPriority::Normal),
+                client_payment_id: None,
+                personal_note: None,
+            };
+            let _: Payment = wallet.pay_onchain(req).await.unwrap();
 
             // pay_lnurl
             let req = PayLnurlRequest {
