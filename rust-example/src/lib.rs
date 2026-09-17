@@ -470,11 +470,12 @@ mod test {
 
             // pay_onchain
             let address: Address<NetworkUnchecked> = "bc1...".parse().unwrap();
+            let client_payment_id = ClientPaymentId::generate();
             let req = PayOnchainRequest {
                 address,
                 amount: Amount::from_sats_u32(10_000),
                 priority: Some(ConfirmationPriority::Normal),
-                client_payment_id: None,
+                client_payment_id: Some(client_payment_id),
                 personal_note: None,
             };
             let _: Payment = wallet.pay_onchain(req).await.unwrap();
