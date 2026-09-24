@@ -42,7 +42,7 @@ mod test {
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
                 GetHumanBitcoinAddressResponse, GetNextUnusedAddressResponse,
-                GetPaymentRequest, GetPaymentResponse,
+                GetPaymentByIdRequest, GetPaymentRequest, GetPaymentResponse,
                 GetUpdatedPaymentsRequest, GetUpdatedPaymentsResponse,
                 ListChannelsResponse, ListClientsResponse,
                 ListPaymentsResponse, NodeInfo, OpenChannelRequest,
@@ -612,6 +612,15 @@ mod test {
             let _: Option<TimestampMs> = finalized_at;
             let _: TimestampMs = created_at;
             let _: TimestampMs = updated_at;
+
+            // get_payment_by_id
+            let invoice: Invoice = "lnbc1...".parse().unwrap();
+            let req: GetPaymentByIdRequest = GetPaymentByIdRequest {
+                id: invoice.payment_id(),
+            };
+            let GetPaymentResponse { payment } =
+                wallet.get_payment_by_id(req).await.unwrap();
+            let _: Option<Payment> = payment;
 
             // get_updated_payments
             let req: GetUpdatedPaymentsRequest = GetUpdatedPaymentsRequest {
