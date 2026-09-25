@@ -52,7 +52,8 @@ mod test {
                 PayableDetails, PayerProofDisclosures, PaymentSyncSummary,
                 RevokeClientRequest, UpdateClientRequest,
                 UpdatePersonalNoteRequest, WaitForNextPaymentRequest,
-                WaitForNextPaymentResponse, WithdrawLnurlRequest,
+                WaitForNextPaymentResponse, WaitForPaymentUpdateRequest,
+                WithdrawLnurlRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, OfferId, Order, Payment,
@@ -672,6 +673,24 @@ mod test {
             } = wallet.wait_for_next_payment(req).await.unwrap();
             let _: Payment = payment;
             let _: PaymentUpdatedIndex = next_start_index;
+
+            // wait_for_payment_by_id
+            let invoice: Invoice = "lnbc1...".parse().unwrap();
+            let _: Payment = wallet
+                .wait_for_payment_by_id(invoice.payment_id(), None)
+                .await
+                .unwrap();
+
+            // wait_for_payment_update
+            let req: WaitForPaymentUpdateRequest =
+                WaitForPaymentUpdateRequest {
+                    id: invoice.payment_id(),
+                    after: None,
+                    timeout: None,
+                };
+            let payment: Payment =
+                wallet.wait_for_payment_update(req).await.unwrap();
+            let _: PaymentUpdatedIndex = payment.updated_index();
 
             // update_personal_note
             let req = UpdatePersonalNoteRequest {
