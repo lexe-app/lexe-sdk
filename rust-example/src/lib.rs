@@ -29,8 +29,8 @@ mod test {
             bitcoin::{
                 Amount, ChannelId, ClaimMethod, ConfirmationPriority, Invoice,
                 LnurlPayRequest, LnurlPayRequestMetadata, LnurlWithdrawRequest,
-                Offer, OutPoint, PayerProof, PaymentMethod, Txid,
-                UserChannelId,
+                Offer, OutPoint, PayerProof, PaymentMethod, PaymentUriMethod,
+                Txid, UserChannelId,
             },
             command::{
                 AnalyzeRequest, AnalyzeResponse, CancelPaymentRequest,
