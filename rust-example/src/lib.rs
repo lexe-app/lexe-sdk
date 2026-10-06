@@ -187,9 +187,11 @@ mod test {
         async fn test_wallet_db_async(wallet: &LexeWallet) {
             // sync_payments
             let PaymentSyncSummary {
+                latest_updated_index,
                 num_new,
                 num_updated,
             } = wallet.sync_payments().await.unwrap();
+            let _: Option<PaymentUpdatedIndex> = latest_updated_index;
             let _: usize = num_new;
             let _: usize = num_updated;
 
