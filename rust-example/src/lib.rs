@@ -47,11 +47,12 @@ mod test {
                 ListChannelsResponse, ListClientsResponse,
                 ListPaymentsResponse, NodeInfo, OpenChannelRequest,
                 OpenChannelResponse, PayInvoiceRequest, PayLnurlRequest,
-                PayOfferRequest, PayOnchainRequest, PayRequest, PayableDetails,
-                PayerProofDisclosures, PaymentSyncSummary, RevokeClientRequest,
-                UpdateClientRequest, UpdatePersonalNoteRequest,
-                WaitForNextPaymentRequest, WaitForNextPaymentResponse,
-                WithdrawLnurlRequest,
+                PayOfferRequest, PayOnchainPreflightRequest,
+                PayOnchainPreflightResponse, PayOnchainRequest, PayRequest,
+                PayableDetails, PayerProofDisclosures, PaymentSyncSummary,
+                RevokeClientRequest, UpdateClientRequest,
+                UpdatePersonalNoteRequest, WaitForNextPaymentRequest,
+                WaitForNextPaymentResponse, WithdrawLnurlRequest,
             },
             payment::{
                 ClientPaymentId, LnClaimId, OfferId, Order, Payment,
@@ -485,6 +486,22 @@ mod test {
                 personal_note: None,
             };
             let _: Payment = wallet.pay_onchain(req).await.unwrap();
+
+            // pay_onchain_preflight
+            let address: Address<NetworkUnchecked> = "bc1...".parse().unwrap();
+            let req = PayOnchainPreflightRequest {
+                address,
+                amount: Amount::from_sats_u32(10_000),
+                client_payment_id: None,
+            };
+            let PayOnchainPreflightResponse {
+                high_fees,
+                normal_fees,
+                background_fees,
+            } = wallet.pay_onchain_preflight(req).await.unwrap();
+            let _: Option<Amount> = high_fees;
+            let _: Amount = normal_fees;
+            let _: Amount = background_fees;
 
             // pay_lnurl
             let partner_pk: UserPk = UserPk::from_array([69; 32]);
