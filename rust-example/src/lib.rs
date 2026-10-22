@@ -27,10 +27,11 @@ mod test {
                 NodePk, RootSeed, Scope, UserPk,
             },
             bitcoin::{
-                Amount, ChannelId, ClaimMethod, ConfirmationPriority, Invoice,
-                LnurlPayRequest, LnurlPayRequestMetadata, LnurlWithdrawRequest,
-                Offer, OutPoint, PayerProof, PaymentMethod, PaymentUriMethod,
-                Txid, UserChannelId,
+                Amount, ChannelId, ClaimMethod, ConfirmationPriority,
+                DescriptionHash, Invoice, LnurlPayRequest,
+                LnurlPayRequestMetadata, LnurlWithdrawRequest, Offer, OutPoint,
+                PayerProof, PaymentMethod, PaymentUriMethod, Txid,
+                UserChannelId,
             },
             command::{
                 AnalyzeRequest, AnalyzeResponse, CancelPaymentRequest,
@@ -416,6 +417,7 @@ mod test {
                 expiration_secs: Some(3600),
                 amount: None,
                 description: None,
+                description_hash: None,
                 personal_note: None,
                 partner_pk: None,
                 partner_prop_fee: None,
@@ -425,6 +427,7 @@ mod test {
                 index,
                 invoice,
                 description,
+                description_hash,
                 amount,
                 created_at,
                 expires_at,
@@ -434,6 +437,7 @@ mod test {
             let _: PaymentCreatedIndex = index;
             let _: Invoice = invoice;
             let _: Option<String> = description;
+            let _: Option<DescriptionHash> = description_hash;
             let _: Option<Amount> = amount;
             let _: TimestampMs = created_at;
             let _: TimestampMs = expires_at;
