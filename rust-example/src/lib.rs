@@ -35,14 +35,14 @@ mod test {
                 UserChannelId,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, BitcoinOrFiat, Budget,
-                BudgetInfo, BudgetReset, BudgetResetInfo, BudgetResetInterval,
-                CancelPaymentRequest, CashAppBuyRequest, CashAppBuyResponse,
-                ChannelDetails, CheckAddressResponse, ClaimableDetails,
-                ClientInfo, ClientInfoResponse, CloseChannelRequest,
-                CreateClientRequest, CreateClientResponse,
-                CreateInvoiceRequest, CreateInvoiceResponse,
-                CreateOfferRequest, CreateOfferResponse,
+                AnalyzeRequest, AnalyzeResponse, AutoWithdrawDestination,
+                BitcoinOrFiat, Budget, BudgetInfo, BudgetReset,
+                BudgetResetInfo, BudgetResetInterval, CancelPaymentRequest,
+                CashAppBuyRequest, CashAppBuyResponse, ChannelDetails,
+                CheckAddressResponse, ClaimableDetails, ClientInfo,
+                ClientInfoResponse, CloseChannelRequest, CreateClientRequest,
+                CreateClientResponse, CreateInvoiceRequest,
+                CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
                 GetExclusiveAddressResponse, GetHumanBitcoinAddressResponse,
@@ -56,7 +56,8 @@ mod test {
                 PayOnchainPreflightResponse, PayOnchainRequest, PayRequest,
                 PayableDetails, PayerProofDisclosures, PaymentSyncSummary,
                 RevokeClientRequest, UpdateClientRequest,
-                UpdatePersonalNoteRequest, WaitForNextPaymentRequest,
+                UpdatePersonalNoteRequest, UpdateUserSettingsRequest,
+                UserSettings, WaitForNextPaymentRequest,
                 WaitForNextPaymentResponse, WaitForPaymentUpdateRequest,
                 WithdrawLnurlRequest,
             },
@@ -852,6 +853,29 @@ mod test {
             let ClientInfoResponse { client } =
                 wallet.revoke_client(req).await.unwrap();
             let _: ClientInfo = client;
+
+            // get_user_settings
+            let UserSettings {
+                auto_withdraw_destination,
+                auto_withdraw_threshold,
+                preferred_fiat_currency,
+            } = wallet.get_user_settings().await.unwrap();
+            let _: Option<AutoWithdrawDestination> = auto_withdraw_destination;
+            let _: Option<Amount> = auto_withdraw_threshold;
+            let _: Option<String> = preferred_fiat_currency;
+
+            // update_user_settings
+            let address: Address<NetworkUnchecked> = "bc1...".parse().unwrap();
+            let threshold = Amount::from_sats_u32(100_000);
+            let req = UpdateUserSettingsRequest {
+                new_auto_withdraw_destination: Some(Some(
+                    AutoWithdrawDestination::Address { address },
+                )),
+                new_auto_withdraw_threshold: Some(Some(threshold)),
+                new_preferred_fiat_currency: Some("USD".to_owned()),
+            };
+            let _: UserSettings =
+                wallet.update_user_settings(req).await.unwrap();
         }
 
         async fn test_signup(wallet: &LexeWallet, root_seed: &RootSeed) {
