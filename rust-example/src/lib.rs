@@ -446,6 +446,7 @@ mod test {
             let req = PayInvoiceRequest {
                 invoice,
                 fallback_amount: None,
+                lud12_comment: None,
                 personal_note: Some("Test payment".to_string()),
                 partner_pk: Some(partner_pk),
                 partner_prop_fee: Some(Ppm::new(10_000)),
