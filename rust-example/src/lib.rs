@@ -353,8 +353,12 @@ mod test {
                     let _: Option<String> = label;
                     let _: Option<String> = message;
                 }
-                PaymentMethod::Invoice { invoice } => {
+                PaymentMethod::Invoice {
+                    invoice,
+                    lud12_comment,
+                } => {
                     let _: Invoice = invoice;
+                    let _: Option<String> = lud12_comment;
                 }
                 PaymentMethod::Offer {
                     offer,
