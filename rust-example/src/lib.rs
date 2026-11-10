@@ -20,6 +20,7 @@ mod test {
             DeployEnv, Network, WalletEnv, WalletEnvConfig, WalletEnvDbConfig,
             WalletUserConfig, WalletUserDbConfig,
         },
+        rust_decimal::Decimal,
         semver,
         types::{
             auth::{
@@ -34,12 +35,14 @@ mod test {
                 UserChannelId,
             },
             command::{
-                AnalyzeRequest, AnalyzeResponse, CancelPaymentRequest,
-                CashAppBuyRequest, CashAppBuyResponse, ChannelDetails,
-                CheckAddressResponse, ClaimableDetails, ClientInfo,
-                ClientInfoResponse, CloseChannelRequest, CreateClientRequest,
-                CreateClientResponse, CreateInvoiceRequest,
-                CreateInvoiceResponse, CreateOfferRequest, CreateOfferResponse,
+                AnalyzeRequest, AnalyzeResponse, BitcoinOrFiat, Budget,
+                BudgetInfo, BudgetReset, BudgetResetInfo, BudgetResetInterval,
+                CancelPaymentRequest, CashAppBuyRequest, CashAppBuyResponse,
+                ChannelDetails, CheckAddressResponse, ClaimableDetails,
+                ClientInfo, ClientInfoResponse, CloseChannelRequest,
+                CreateClientRequest, CreateClientResponse,
+                CreateInvoiceRequest, CreateInvoiceResponse,
+                CreateOfferRequest, CreateOfferResponse,
                 CreatePayerProofRequest, CreatePayerProofResponse,
                 CredentialKind, GetClientInfoResponse,
                 GetExclusiveAddressResponse, GetHumanBitcoinAddressResponse,
@@ -732,6 +735,7 @@ mod test {
                 scopes,
                 permissions,
                 effective_permissions,
+                budget,
             } = wallet.client_info().await.unwrap();
             let _: CredentialKind = kind;
             let _: Option<ed25519::PublicKey> = client_pk;
@@ -741,6 +745,7 @@ mod test {
             let _: Vec<String> = scopes;
             let _: Vec<String> = permissions;
             let _: Vec<String> = effective_permissions;
+            let _: Option<BudgetInfo> = budget;
             let _ = matches!(kind, CredentialKind::RootSeed);
 
             // cancel_payment
@@ -761,6 +766,7 @@ mod test {
                 scopes,
                 permissions,
                 effective_permissions,
+                budget,
             } = clients.into_values().next().unwrap();
             let _: ed25519::PublicKey = client_pk;
             let _: TimestampMs = created_at;
@@ -769,6 +775,24 @@ mod test {
             let _: Vec<String> = scopes;
             let _: Vec<String> = permissions;
             let _: Vec<String> = effective_permissions;
+            let _: Option<BudgetInfo> = budget;
+
+            // Budget types
+            let limit: BitcoinOrFiat =
+                BitcoinOrFiat::Bitcoin(Amount::from_sats_u32(100_000));
+            let _: BitcoinOrFiat = BitcoinOrFiat::Fiat {
+                amount: Decimal::from(20),
+                currency: "USD".to_owned(),
+            };
+            let reset: BudgetReset = BudgetReset {
+                interval: BudgetResetInterval::Monthly,
+                interval_count: Some(1),
+                utc_offset_mins: None,
+            };
+            let budget: Budget = Budget {
+                limit,
+                reset: Some(reset),
+            };
 
             // create_client
             let req = CreateClientRequest {
@@ -776,17 +800,36 @@ mod test {
                 label: Some("my-client".to_string()),
                 scopes: BTreeSet::from([Scope::Full]),
                 permissions: Vec::new(),
+                budget: Some(budget),
             };
             let CreateClientResponse {
                 client_pk,
                 client_credentials,
                 created_at,
                 effective_permissions,
+                budget,
             } = wallet.create_client(req).await.unwrap();
             let _: ed25519::PublicKey = client_pk;
             let _: ClientCredentials = client_credentials;
             let _: TimestampMs = created_at;
             let _: Vec<String> = effective_permissions;
+            let BudgetInfo {
+                limit,
+                reset,
+                spendable,
+            } = budget.unwrap();
+            let _: BitcoinOrFiat = limit;
+            let _: BitcoinOrFiat = spendable;
+            let BudgetResetInfo {
+                interval,
+                interval_count,
+                utc_offset_mins,
+                next_reset,
+            } = reset.unwrap();
+            let _: BudgetResetInterval = interval;
+            let _: u8 = interval_count;
+            let _: i32 = utc_offset_mins;
+            let _: TimestampMs = next_reset;
 
             // update_client
             let req = UpdateClientRequest {
@@ -795,6 +838,8 @@ mod test {
                 new_expires_at: Some(None),
                 new_permissions: None,
                 new_scopes: None,
+                new_budget_limit: Some(Some(limit)),
+                new_budget_reset: Some(None),
             };
             let ClientInfoResponse { client } =
                 wallet.update_client(req).await.unwrap();
