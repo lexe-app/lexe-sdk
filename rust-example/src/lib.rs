@@ -728,6 +728,7 @@ mod test {
             // client_info
             let GetClientInfoResponse {
                 kind,
+                user_pk,
                 client_pk,
                 created_at,
                 expires_at,
@@ -738,6 +739,7 @@ mod test {
                 budget,
             } = wallet.client_info().await.unwrap();
             let _: CredentialKind = kind;
+            let _: Option<UserPk> = user_pk;
             let _: Option<ed25519::PublicKey> = client_pk;
             let _: Option<TimestampMs> = created_at;
             let _: Option<TimestampMs> = expires_at;
